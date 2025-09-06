@@ -31,6 +31,18 @@ export class User {
 
   @Prop({ default: false })
   isOtpVerified?: boolean;
+
+  @Prop()
+  fullName?: string;
+
+  @Prop()
+  weeksPregnant?: number;
+
+  @Prop({ type: [String], default: [] })
+  symptoms?: string[];
+
+  @Prop({ default: false })
+  onboardingCompleted?: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -1,15 +1,28 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
-@Controller('users')
+@Controller('user')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @Get('me')
+  @Get('profile')
   getCurrentUser(@CurrentUser() user) {
     return user;
+  }
+
+  @Post('onboarding')
+  async updateOnboarding(
+    @CurrentUser() user,
+    @Body() onboardingData: {
+      fullName: string;
+      weeksPregnant: number;
+      symptoms: string[];
+      onboardingCompleted: boolean;
+    }
+  ) {
+    return this.usersService.updateOnboarding(user._id, onboardingData);
   }
 }
