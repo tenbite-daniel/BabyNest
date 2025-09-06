@@ -33,8 +33,8 @@ export class AuthService {
       user: {
         id: user._id,
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        username: user.username,
+        phoneNumber: user.phoneNumber,
         role: user.role,
       },
     };

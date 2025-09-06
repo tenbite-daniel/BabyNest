@@ -9,8 +9,8 @@ export class RegisterDto {
   password: string;
 
   @IsString()
-  firstName: string;
+  username: string;
 
   @IsString()
-  lastName: string;
+  phoneNumber: string;
 }
