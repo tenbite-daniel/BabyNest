@@ -14,7 +14,8 @@
         "next.config.js",
         ".next/types/**/*.ts",
         "tests/**/*.ts",
-        "tests/**/*.tsx"
+        "tests/**/*.tsx",
+        "tests/__mocks__/next/image.js"
     ],
     "exclude": ["node_modules"]
 }
