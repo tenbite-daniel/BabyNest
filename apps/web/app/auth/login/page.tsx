@@ -34,18 +34,38 @@ export default function LoginPage() {
 
             const data = await response.json();
 
-            // Store auth state in localStorage
+            // Store only essential auth state
             localStorage.setItem("isLoggedIn", "true");
             localStorage.setItem("userEmail", email);
-            localStorage.setItem("token", data.token);
+            localStorage.setItem("token", data.access_token);
 
             // Trigger custom event for immediate navbar update
             window.dispatchEvent(new CustomEvent("authStateChanged"));
 
-            // Redirect to dashboard
-            router.push("/dashboard");
+            // Check onboarding status from database
+            try {
+                const profileResponse = await fetch('http://localhost:5000/user/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${data.access_token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (profileResponse.ok) {
+                    const profileData = await profileResponse.json();
+                    if (profileData.onboardingCompleted) {
+                        localStorage.setItem("onboardingCompleted", "true");
+                        router.push("/dashboard");
+                    } else {
+                        router.push("/onboarding");
+                    }
+                } else {
+                    router.push("/onboarding");
+                }
+            } catch (error) {
+                router.push("/onboarding");
+            }
         } catch (err: any) {
-            console.error("Login error:", err);
             // If backend is not available or CORS issue
             if (err.message === "Failed to fetch" || err.name === "TypeError") {
                 setError(

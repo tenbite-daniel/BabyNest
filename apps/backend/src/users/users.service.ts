@@ -55,4 +55,17 @@ export class UsersService {
       }
     ).exec();
   }
+
+  async updateOnboarding(userId: string, onboardingData: {
+    fullName: string;
+    weeksPregnant: number;
+    symptoms: string[];
+    onboardingCompleted: boolean;
+  }): Promise<UserDocument | null> {
+    return this.userModel.findByIdAndUpdate(
+      userId,
+      onboardingData,
+      { new: true }
+    ).exec();
+  }
 }
