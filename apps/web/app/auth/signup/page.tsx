@@ -53,8 +53,9 @@ export default function SignupPage() {
             }
 
             const data = await response.json();
-            console.log("Registration successful:", data);
-            alert("Registration successful!");
+            
+            // Redirect to login page
+            router.push('/auth/login');
         } catch (err: any) {
             setError(err.message || "Registration failed");
         } finally {
@@ -84,7 +85,7 @@ export default function SignupPage() {
                 </div>
 
                 {/* Form */}
-                <form onSubmit={handleSubmit} className="space-y-4 mb-6">
+                <form onSubmit={handleSubmit} method="POST" action="#" className="space-y-4 mb-6">
                     {error && (
                         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                             {error}
