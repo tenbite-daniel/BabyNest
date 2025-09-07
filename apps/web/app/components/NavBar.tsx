@@ -136,7 +136,7 @@ const Navbar = () => {
                         About
                     </Link>
                     <Link
-                        href="/terms"
+                        href="/term"
                         className="px-5 py-3 text-white hover:bg-white/10 transition-colors"
                         onClick={() => setIsMenuOpen(false)}
                     >

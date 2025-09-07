@@ -1,1 +1,14 @@
 @import "tailwindcss";
+/* global.css */
+:root {
+  --color-primary: #D7656A;
+  --color-secondary: #D9646A;
+  --color-background: #FFFFFF;
+}
+
+body {
+  background-color: var(--color-background);
+  color: #000; /* you can adjust text color */
+  margin: 0;
+  font-family: system-ui, sans-serif;
+}
