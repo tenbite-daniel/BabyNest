@@ -11,9 +11,13 @@ import { UsersModule } from './users/users.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
-      useFactory: (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGODB_URI'),
-      }),
+      useFactory: (configService: ConfigService) => {
+        const uri = configService.get<string>('MONGODB_URI');
+        console.log('✅ Loaded MongoDB URI:', uri); // 👈 Debug log
+        return {
+          uri,
+        };
+      },
       inject: [ConfigService],
     }),
     AuthModule,
