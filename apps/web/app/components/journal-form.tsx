@@ -75,7 +75,7 @@ const JournalForm: React.FC<JournalFormProps> = ({ onSubmit }) => {
                     <div className="flex-1">
                         <p className="text-sm font-medium text-gray-700 mb-2">How far along are you?</p>
                         <div className="flex gap-2 mb-4">
-                            {["1st trimester", "2nd trimester", "3rd trimester"].map((option) => (
+                            {["First Trimester", "Second Trimester", "Third Trimester"].map((option) => (
                                 <button
                                     key={option}
                                     type="button"
