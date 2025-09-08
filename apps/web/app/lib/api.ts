@@ -63,11 +63,32 @@ export async function updateOnboarding(
 }
 
 /* ---------------- JOURNAL ---------------- */
-export async function createJournalEntry(entry: string, mood: string) {
-  return request("/journal", {
-    method: "POST",
-    body: JSON.stringify({ entry, mood }),
+export async function createJournalEntry(data: any) {
+  const formData = new FormData();
+  formData.append('date', data.date);
+  formData.append('trimester', data.trimester);
+  formData.append('todos', JSON.stringify(data.todos));
+  formData.append('notes', data.notes);
+  
+  // Append images
+  data.images?.forEach((image: File, index: number) => {
+    formData.append(`images`, image);
   });
+
+  const res = await fetch(`${API_BASE_URL}/journal`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+    },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(errorText || `API error: ${res.status}`);
+  }
+
+  return res.json();
 }
 
 export async function getJournalEntries() {

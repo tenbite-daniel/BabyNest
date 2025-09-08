@@ -5,12 +5,12 @@ import JournalForm from "../components/journal-form";
 import { createJournalEntry } from "../lib/api";
 
 const JournalFormPage: React.FC = () => {
-  const [entries, setEntries] = useState<{ id: string; entry: string; mood: string }[]>([]);
+  const [entries, setEntries] = useState<any[]>([]);
 
   // Function to handle form submission
-  const handleJournalSubmit = async (entry: string, mood: string, editId?: string) => {
+  const handleJournalSubmit = async (data: any) => {
     try {
-      const newEntry = await createJournalEntry(entry, mood);
+      const newEntry = await createJournalEntry(data);
       setEntries((prev) => [...prev, newEntry]);
     } catch (error) {
       console.error("Failed to save journal:", error);
