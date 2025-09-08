@@ -1,7 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './schemas/user.schema';
+import { ChangePasswordDto } from '../auth/dto/change-password.dto';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
@@ -59,7 +61,7 @@ export class UsersService {
   async updateOnboarding(userId: string, onboardingData: {
     fullName: string;
     weeksPregnant: number;
-    symptoms: string[];
+    symptoms: Record<string, number>;
     onboardingCompleted: boolean;
   }): Promise<UserDocument | null> {
     return this.userModel.findByIdAndUpdate(
@@ -67,5 +69,22 @@ export class UsersService {
       onboardingData,
       { new: true }
     ).exec();
+  }
+
+  async changePassword(userId: string, changePasswordDto: ChangePasswordDto): Promise<{ message: string }> {
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const isOldPasswordValid = await bcrypt.compare(changePasswordDto.oldPassword, user.password);
+    if (!isOldPasswordValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    const hashedNewPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);
+    await this.userModel.findByIdAndUpdate(userId, { password: hashedNewPassword }).exec();
+
+    return { message: 'Password changed successfully' };
   }
 }

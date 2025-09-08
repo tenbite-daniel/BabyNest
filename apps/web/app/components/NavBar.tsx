@@ -146,6 +146,13 @@ const Navbar = () => {
                     {isLoggedIn ? (
                         <>
                             <Link
+                                href="/profile"
+                                className="px-5 py-3 text-white hover:bg-white/10 transition-colors"
+                                onClick={() => setIsMenuOpen(false)}
+                            >
+                                Profile
+                            </Link>
+                            <Link
                                 href="/dashboard"
                                 className="px-5 py-3 text-white hover:bg-white/10 transition-colors"
                                 onClick={() => setIsMenuOpen(false)}

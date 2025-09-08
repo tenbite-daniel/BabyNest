@@ -7,6 +7,7 @@ import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
@@ -90,5 +91,9 @@ export class AuthService {
     await this.usersService.updatePassword(resetPasswordDto.email, hashedPassword);
 
     return { message: 'Password reset successfully' };
+  }
+
+  async changePassword(userId: string, changePasswordDto: ChangePasswordDto) {
+    return this.usersService.changePassword(userId, changePasswordDto);
   }
 }
