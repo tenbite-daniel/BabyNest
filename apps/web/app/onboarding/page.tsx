@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface UserData {
     fullName: string;
@@ -9,19 +10,55 @@ interface UserData {
     email: string;
     phoneNumber: string;
     weeksPregnant: string;
-    symptoms: string[];
+    symptoms: Record<string, number>;
 }
 
 const SYMPTOMS = [
-    { id: "nausea", name: "Nausea", icon: "🤢" },
-    { id: "fatigue", name: "Fatigue", icon: "😴" },
-    { id: "backache", name: "Back Ache", icon: "🦴" },
-    { id: "headache", name: "Headache", icon: "🤕" },
-    { id: "heartburn", name: "Heartburn", icon: "🔥" },
-    { id: "swelling", name: "Swelling", icon: "🦵" },
-    { id: "cramping", name: "Cramping", icon: "⚡" },
-    { id: "moodswings", name: "Mood Swings", icon: "😭" },
-    { id: "cravings", name: "Food Cravings", icon: "🍎" },
+    {
+        id: "backDiscomfort",
+        name: "Are you experiencing any back discomfort?",
+        image: "/onboarding-step-4/1.png",
+    },
+    {
+        id: "swelling",
+        name: "Do you notice swelling in your hands or feet?",
+        image: "/onboarding-step-4/2.png",
+    },
+    {
+        id: "heartburn",
+        name: "Do you feel any burning sensation or indigestion?",
+        image: "/onboarding-step-4/3.png",
+    },
+    {
+        id: "fatigue",
+        name: "Are you feeling unusually tired or exhausted?",
+        image: "/onboarding-step-4/4.png",
+    },
+    {
+        id: "contractions",
+        name: "Are you feeling occasional tightening or contractions in your belly?",
+        image: "/onboarding-step-4/5.png",
+    },
+    {
+        id: "moodChanges",
+        name: "Do you feel anxious, stressed, or low in mood?",
+        image: "/onboarding-step-4/6.png",
+    },
+    {
+        id: "extraTired",
+        name: "How often are you feeling extra tired?",
+        image: "/onboarding-step-4/7.jpg",
+    },
+    {
+        id: "moreTired",
+        name: "Are you feeling more tired than usual?",
+        image: "/onboarding-step-4/8.jpg",
+    },
+    {
+        id: "breastSoreness",
+        name: "Do you notice any soreness or swelling in your breasts?",
+        image: "/onboarding-step-4/9.png",
+    },
 ];
 
 export default function OnboardingPage() {
@@ -33,7 +70,7 @@ export default function OnboardingPage() {
         email: "",
         phoneNumber: "",
         weeksPregnant: "",
-        symptoms: [],
+        symptoms: {},
     });
 
     useEffect(() => {
@@ -102,12 +139,23 @@ export default function OnboardingPage() {
         }
     };
 
-    const handleSymptomToggle = (symptomId: string) => {
+    const incrementSymptom = (symptomId: string) => {
         setUserData((prev) => ({
             ...prev,
-            symptoms: prev.symptoms.includes(symptomId)
-                ? prev.symptoms.filter((s) => s !== symptomId)
-                : [...prev.symptoms, symptomId],
+            symptoms: {
+                ...prev.symptoms,
+                [symptomId]: Math.min((prev.symptoms[symptomId] || 0) + 1, 10),
+            },
+        }));
+    };
+
+    const decrementSymptom = (symptomId: string) => {
+        setUserData((prev) => ({
+            ...prev,
+            symptoms: {
+                ...prev.symptoms,
+                [symptomId]: Math.max((prev.symptoms[symptomId] || 0) - 1, 0),
+            },
         }));
     };
 
@@ -152,10 +200,20 @@ export default function OnboardingPage() {
 
                         <div className="flex justify-center gap-4 mb-8">
                             <div className="w-32 h-32 bg-pink-100 rounded-lg flex items-center justify-center">
-                                <span className="text-4xl">🤰</span>
+                                <Image
+                                    src="/logo.png"
+                                    alt="Pregnancy"
+                                    width={64}
+                                    height={64}
+                                />
                             </div>
                             <div className="w-32 h-32 bg-pink-100 rounded-lg flex items-center justify-center">
-                                <span className="text-4xl">👶</span>
+                                <Image
+                                    src="/logo.png"
+                                    alt="Baby"
+                                    width={64}
+                                    height={64}
+                                />
                             </div>
                         </div>
 
@@ -164,7 +222,7 @@ export default function OnboardingPage() {
                             daily tips and therapy support.
                         </p>
 
-                        <div className="flex justify-center">
+                        <div className="flex flex-col items-center gap-4">
                             <button
                                 onClick={handleNext}
                                 className="max-w-md w-full text-white px-8 py-3 font-medium hover:opacity-90 transition-opacity"
@@ -174,6 +232,18 @@ export default function OnboardingPage() {
                                 }}
                             >
                                 Next
+                            </button>
+                            <button
+                                onClick={handleNext}
+                                className="max-w-md w-full py-3 font-medium hover:opacity-90 transition-opacity"
+                                style={{
+                                    backgroundColor: "white",
+                                    borderRadius: "50px",
+                                    border: "2px solid #D7656A",
+                                    color: "#D7656A",
+                                }}
+                            >
+                                Skip for now
                             </button>
                         </div>
                     </div>
@@ -295,17 +365,29 @@ export default function OnboardingPage() {
                             </div>
                         </div>
 
-                        <div className="px-6 flex justify-center">
+                        <div className="px-6 flex flex-col items-center gap-4 mt-8">
                             <button
                                 onClick={handleNext}
                                 disabled={!userData.fullName.trim()}
-                                className="max-w-md w-full mt-8 text-white py-3 font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="max-w-md w-full text-white py-3 font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                                 style={{
                                     backgroundColor: "#D9646A",
                                     borderRadius: "50px",
                                 }}
                             >
                                 Next
+                            </button>
+                            <button
+                                onClick={handleNext}
+                                className="max-w-md w-full py-3 font-medium hover:opacity-90 transition-opacity"
+                                style={{
+                                    backgroundColor: "white",
+                                    borderRadius: "50px",
+                                    border: "2px solid #D7656A",
+                                    color: "#D7656A",
+                                }}
+                            >
+                                Skip for now
                             </button>
                         </div>
                     </div>
@@ -395,7 +477,7 @@ export default function OnboardingPage() {
                             </div>
                         </div>
 
-                        <div className="px-6 flex justify-center">
+                        <div className="px-6 flex flex-col items-center gap-4">
                             <button
                                 onClick={handleNext}
                                 disabled={
@@ -409,6 +491,18 @@ export default function OnboardingPage() {
                                 }}
                             >
                                 Next
+                            </button>
+                            <button
+                                onClick={handleNext}
+                                className="max-w-md w-full py-3 font-medium hover:opacity-90 transition-opacity"
+                                style={{
+                                    backgroundColor: "white",
+                                    borderRadius: "50px",
+                                    border: "2px solid #D7656A",
+                                    color: "#D7656A",
+                                }}
+                            >
+                                Skip for now
                             </button>
                         </div>
                     </div>
@@ -447,39 +541,76 @@ export default function OnboardingPage() {
                                 Please input your symptoms
                             </h2>
                             <p className="text-gray-600 mb-6">
-                                We use this information to create a personalized
-                                feed for you.
+                                Please rate on a scale of 1 to 10, where 1 is
+                                the lowest and 10 is the highest.
                             </p>
                         </div>
 
                         <div className="px-10">
-                            <div className="px-6 grid grid-cols-3 gap-4 mb-8">
+                            <div className="px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
                                 {SYMPTOMS.map((symptom) => (
                                     <div
                                         key={symptom.id}
-                                        onClick={() =>
-                                            handleSymptomToggle(symptom.id)
-                                        }
-                                        className={`p-4 border-2 rounded-lg cursor-pointer transition-all text-center ${
-                                            userData.symptoms.includes(
-                                                symptom.id
-                                            )
-                                                ? "border-[#D7656A] bg-pink-50"
-                                                : "border-gray-200 hover:border-gray-300"
-                                        }`}
+                                        className="p-4 text-center"
                                     >
-                                        <div className="text-2xl mb-2">
-                                            {symptom.icon}
+                                        <div className="mb-2 flex justify-center">
+                                            <div className="w-[235px] h-[321px] overflow-hidden">
+                                                <Image
+                                                    src={symptom.image}
+                                                    alt={symptom.name}
+                                                    width={235}
+                                                    height={321}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
                                         </div>
-
-                                        <input
-                                            type="checkbox"
-                                            checked={userData.symptoms.includes(
-                                                symptom.id
-                                            )}
-                                            onChange={() => {}}
-                                            className="mt-2"
-                                        />
+                                        <div className="flex items-center justify-center gap-2 mb-3">
+                                            <button
+                                                onClick={() =>
+                                                    decrementSymptom(symptom.id)
+                                                }
+                                                className="w-6 h-6 flex items-center justify-center hover:opacity-80"
+                                            >
+                                                <svg
+                                                    className="w-4 h-4"
+                                                    fill="none"
+                                                    stroke="#D7656A"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M19 9l-7 7-7-7"
+                                                    />
+                                                </svg>
+                                            </button>
+                                            <div className="text-lg font-bold text-gray-800 min-w-[24px]">
+                                                {userData.symptoms[
+                                                    symptom.id
+                                                ] || 0}
+                                            </div>
+                                            <button
+                                                onClick={() =>
+                                                    incrementSymptom(symptom.id)
+                                                }
+                                                className="w-6 h-6 flex items-center justify-center hover:opacity-80"
+                                            >
+                                                <svg
+                                                    className="w-4 h-4"
+                                                    fill="none"
+                                                    stroke="#D7656A"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M5 15l7-7 7 7"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        </div>
                                         <div className="text-sm font-medium text-gray-700">
                                             {symptom.name}
                                         </div>
@@ -488,16 +619,32 @@ export default function OnboardingPage() {
                             </div>
                         </div>
 
-                        <div className="px-6 flex justify-center">
+                        <div className="px-6 text-center flex flex-col justify-center items-center gap-4">
+                            <p className="text-gray-600 mb-4">
+                                We use this information to create a personalized
+                                feed for you.
+                            </p>
                             <button
                                 onClick={handleNext}
-                                className="max-w-md w-full text-white py-3 font-medium hover:opacity-90 transition-opacity"
+                                className="max-w-lg w-full text-white py-3 font-medium hover:opacity-90 transition-opacity mb-4"
                                 style={{
                                     backgroundColor: "#D7656A",
                                     borderRadius: "50px",
                                 }}
                             >
                                 Next
+                            </button>
+                            <button
+                                onClick={handleNext}
+                                className="max-w-lg w-full py-3 font-medium hover:opacity-90 transition-opacity"
+                                style={{
+                                    backgroundColor: "white",
+                                    borderRadius: "50px",
+                                    border: "2px solid #D7656A",
+                                    color: "#D7656A",
+                                }}
+                            >
+                                Skip for now
                             </button>
                         </div>
                     </div>
