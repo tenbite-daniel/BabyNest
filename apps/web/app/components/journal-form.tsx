@@ -1,21 +1,21 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 interface JournalFormProps {
   onSubmit: (entry: string, mood: string, editId?: string) => void;
 }
 
 const JournalForm: React.FC<JournalFormProps> = ({ onSubmit }) => {
-  const [entry, setEntry] = useState('');
-  const [mood, setMood] = useState('');
+  const [entry, setEntry] = useState("");
+  const [mood, setMood] = useState("");
   const [editId, setEditId] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(entry, mood, editId);
-    setEntry('');
-    setMood('');
+    onSubmit(entry, mood, editId || undefined);
+    setEntry("");
+    setMood("");
     setEditId(null);
   };
 
@@ -57,15 +57,10 @@ const JournalForm: React.FC<JournalFormProps> = ({ onSubmit }) => {
             type="submit"
             className="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600"
           >
-            {editId ? 'Update' : 'Post'}
+            {editId ? "Update" : "Post"}
           </button>
         </div>
       </form>
-      <div className="mt-4 flex justify-center">
-        <div className="w-32 h-32 bg-gray-200 flex items-center justify-center rounded-md">
-          <span className="text-gray-400">+ Upload Image</span>
-        </div>
-      </div>
     </section>
   );
 };

@@ -7,6 +7,8 @@ import { TestController } from './test/test.controller';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { JournalModule } from './journal/journal.module';
+import { ChatModule } from './chat/chat.module';
+import { GroupModule } from './group/group.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { JournalModule } from './journal/journal.module';
     AuthModule,
     UsersModule,
     JournalModule,
+    ChatModule,
+    GroupModule,
   ],
   controllers: [AppController, TestController],
   providers: [AppService],
