@@ -38,8 +38,8 @@ export class User {
   @Prop()
   weeksPregnant?: number;
 
-  @Prop({ type: [String], default: [] })
-  symptoms?: string[];
+  @Prop({ type: Object, default: {} })
+  symptoms?: Record<string, number>;
 
   @Prop({ default: false })
   onboardingCompleted?: boolean;
