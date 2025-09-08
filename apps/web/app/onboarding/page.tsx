@@ -179,6 +179,10 @@ export default function OnboardingPage() {
         }
     };
 
+    const handleSkip = () => {
+        router.push("/dashboard");
+    };
+
     const handleFinish = () => {
         // This will be called when step 5 is rendered
         setTimeout(() => {
@@ -234,7 +238,7 @@ export default function OnboardingPage() {
                                 Next
                             </button>
                             <button
-                                onClick={handleNext}
+                                onClick={handleSkip}
                                 className="max-w-md w-full py-3 font-medium hover:opacity-90 transition-opacity"
                                 style={{
                                     backgroundColor: "white",
@@ -378,7 +382,7 @@ export default function OnboardingPage() {
                                 Next
                             </button>
                             <button
-                                onClick={handleNext}
+                                onClick={handleSkip}
                                 className="max-w-md w-full py-3 font-medium hover:opacity-90 transition-opacity"
                                 style={{
                                     backgroundColor: "white",
@@ -493,7 +497,7 @@ export default function OnboardingPage() {
                                 Next
                             </button>
                             <button
-                                onClick={handleNext}
+                                onClick={handleSkip}
                                 className="max-w-md w-full py-3 font-medium hover:opacity-90 transition-opacity"
                                 style={{
                                     backgroundColor: "white",
@@ -635,7 +639,7 @@ export default function OnboardingPage() {
                                 Next
                             </button>
                             <button
-                                onClick={handleNext}
+                                onClick={handleSkip}
                                 className="max-w-lg w-full py-3 font-medium hover:opacity-90 transition-opacity"
                                 style={{
                                     backgroundColor: "white",
