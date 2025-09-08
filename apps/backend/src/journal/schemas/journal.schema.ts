@@ -1,7 +1,11 @@
 import { Schema } from 'mongoose';
 
 export const JournalSchema = new Schema({
-  entry: { type: String, required: true },
-  mood: { type: String, required: true },
-  date: { type: Date, default: Date.now },
+  date: { type: String, required: true },
+  trimester: { type: String, required: true },
+  todos: [{ type: String }],
+  completedTodos: [{ type: Boolean }],
+  notes: { type: String, required: true },
+  imageUrls: [{ type: String }],
+  createdAt: { type: Date, default: Date.now },
 });

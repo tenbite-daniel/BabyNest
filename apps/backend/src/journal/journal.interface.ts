@@ -1,7 +1,11 @@
 import { Document } from 'mongoose';
 
 export interface JournalEntry extends Document {
-  entry: string;
-  mood: string;
-  date: Date;
+  date: string;
+  trimester: string;
+  todos: string[];
+  completedTodos: boolean[];
+  notes: string;
+  imageUrls: string[];
+  createdAt: Date;
 }
