@@ -168,11 +168,18 @@ const Navbar = () => {
                                 Chat
                             </Link>
                             <Link
-                                href="/post"
+                                href="/journal"
                                 className="px-5 py-3 text-white hover:bg-white/10 transition-colors"
                                 onClick={() => setIsMenuOpen(false)}
                             >
-                                Post
+                                Journal
+                            </Link>
+                            <Link
+                                href="/jouralform"
+                                className="px-5 py-3 text-white hover:bg-white/10 transition-colors"
+                                onClick={() => setIsMenuOpen(false)}
+                            >
+                                Create Journal
                             </Link>
                         </>
                     ) : (
