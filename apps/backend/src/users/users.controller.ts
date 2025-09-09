@@ -25,4 +25,9 @@ export class UsersController {
   ) {
     return this.usersService.updateOnboarding(user._id, onboardingData);
   }
+
+  @Get('all')
+  async getAllUsers(@CurrentUser() currentUser) {
+    return this.usersService.getAllUsersExcept(currentUser._id);
+  }
 }

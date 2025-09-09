@@ -87,4 +87,11 @@ export class UsersService {
 
     return { message: 'Password changed successfully' };
   }
+
+  async getAllUsersExcept(excludeUserId: string): Promise<User[]> {
+    return this.userModel
+      .find({ _id: { $ne: excludeUserId } })
+      .select('_id fullName username email')
+      .exec();
+  }
 }
