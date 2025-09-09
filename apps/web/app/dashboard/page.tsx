@@ -99,7 +99,7 @@ export default function DashboardPage() {
         };
         setNewSymptom("");
         setSaving(true);
-        const updated = await updateOnboarding({ symptoms });
+        const updated = await updateOnboarding({ symptoms: Object.values(symptoms) });
         setProfile(updated);
         setSaving(false);
     }
@@ -110,7 +110,7 @@ export default function DashboardPage() {
             if (symptoms[key] === label) delete symptoms[key];
         });
         setSaving(true);
-        const updated = await updateOnboarding({ symptoms });
+        const updated = await updateOnboarding({ symptoms: Object.values(symptoms) });
         setProfile(updated);
         setSaving(false);
     }

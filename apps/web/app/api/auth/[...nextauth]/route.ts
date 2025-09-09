@@ -29,8 +29,8 @@ const handler = NextAuth({
           if (response.ok) {
             const data = await response.json();
             console.log('Backend response success:', data);
-            user.accessToken = data.access_token;
-            user.userData = data.user;
+            (user as any).accessToken = data.access_token;
+            (user as any).userData = data.user;
             return true;
           } else {
             const errorText = await response.text();
@@ -45,15 +45,15 @@ const handler = NextAuth({
       return true;
     },
     async jwt({ token, user }) {
-      if (user?.accessToken) {
-        token.accessToken = user.accessToken;
-        token.userData = user.userData;
+      if ((user as any)?.accessToken) {
+        token.accessToken = (user as any).accessToken;
+        token.userData = (user as any).userData;
       }
       return token;
     },
     async session({ session, token }) {
-      session.accessToken = token.accessToken;
-      session.user = token.userData;
+      (session as any).accessToken = token.accessToken;
+      (session as any).user = token.userData || session.user;
       return session;
     },
     async redirect({ url, baseUrl }) {

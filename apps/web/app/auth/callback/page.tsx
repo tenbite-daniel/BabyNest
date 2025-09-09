@@ -9,18 +9,18 @@ export default function AuthCallback() {
   const { data: session } = useSession();
 
   useEffect(() => {
-    if (session?.accessToken && session?.user) {
+    if ((session as any)?.accessToken && (session as any)?.user) {
       // Store auth data in localStorage
       localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("token", session.accessToken as string);
-      localStorage.setItem("userEmail", session.user.email || "");
-      localStorage.setItem("userId", session.user._id || "");
+      localStorage.setItem("token", (session as any).accessToken as string);
+      localStorage.setItem("userEmail", (session as any).user.email || "");
+      localStorage.setItem("userId", (session as any).user._id || "");
       
       // Trigger auth state change event
       window.dispatchEvent(new CustomEvent("authStateChanged"));
       
       // Check onboarding status
-      if (session.user.onboardingCompleted) {
+      if ((session as any).user.onboardingCompleted) {
         localStorage.setItem("onboardingCompleted", "true");
         router.push("/dashboard");
       } else {
