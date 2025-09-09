@@ -150,7 +150,7 @@ export default function ForgetPasswordPage() {
                             {otp.map((digit, index) => (
                                 <input
                                     key={index}
-                                    ref={(el) => (otpRefs.current[index] = el)}
+                                    ref={(el) => { otpRefs.current[index] = el; }}
                                     type="text"
                                     maxLength={1}
                                     className={`w-12 h-12 text-center text-xl font-semibold border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D7656A] ${
