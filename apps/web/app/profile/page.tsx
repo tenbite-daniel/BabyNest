@@ -65,10 +65,9 @@ export default function ProfilePage() {
             }
 
             const updatedProfile = await updateOnboarding({
-                ...userProfile,
                 ...updateData,
                 onboardingCompleted: true
-            });
+            } as any);
 
             setUserProfile({...userProfile, ...updateData});
             setEditingSection(null);
