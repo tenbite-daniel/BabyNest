@@ -9,6 +9,7 @@ import ProgressBadge from "../components/ProgressBadge";
 import SymptomTag from "../components/SymptomTag";
 import JournalCard from "../components/JournalCard";
 import { getJournalEntries, deleteJournalEntry } from "../lib/api";
+import { useAuth } from "../hooks/useAuth";
 import Image from "next/image";
 
 type Profile = {
@@ -20,28 +21,29 @@ type Profile = {
 
 export default function DashboardPage() {
     const router = useRouter();
-
+    const isAuthenticated = useAuth();
     const [profile, setProfile] = useState<Profile | null>(null);
     const [week, setWeek] = useState<number>(12);
     const [saving, setSaving] = useState(false);
     const [calendarDate, setCalendarDate] = useState(new Date());
     const [newSymptom, setNewSymptom] = useState("");
     const [userEmail, setUserEmail] = useState("");
-    const [entries, setEntries] = useState<
-        { _id: string; entry: string; mood: string; date: string }[]
-    >([]);
+    const [entries, setEntries] = useState<{
+        _id: string;
+        date: string;
+        trimester: string;
+        todos: string[];
+        completedTodos: boolean[];
+        notes: string;
+        imageUrls: string[];
+        createdAt: string;
+    }[]>([]);
 
-    // ✅ Check login + load profile
+    // Load profile and journal entries when authenticated
     useEffect(() => {
-        const isLoggedIn = localStorage.getItem("isLoggedIn");
+        if (!isAuthenticated) return;
+        
         const email = localStorage.getItem("userEmail");
-        const token = localStorage.getItem("token");
-
-        if (isLoggedIn !== "true" || !token) {
-            router.push("/auth/login");
-            return;
-        }
-
         setUserEmail(email || "");
 
         (async () => {
@@ -54,22 +56,14 @@ export default function DashboardPage() {
                 console.error(e);
             }
         })();
-    }, [router]);
-
-    // Load journal entries
-    useEffect(() => {
+        
         fetchEntries();
-    }, []);
+    }, [isAuthenticated]);
 
     const fetchEntries = async () => {
         try {
             const data = await getJournalEntries();
-            setEntries(
-                data.map((item: any) => ({
-                    ...item,
-                    date: new Date(item.date).toLocaleDateString(),
-                }))
-            );
+            setEntries(data);
         } catch (error) {
             console.error("Failed to fetch entries:", error);
         }
@@ -105,7 +99,7 @@ export default function DashboardPage() {
         };
         setNewSymptom("");
         setSaving(true);
-        const updated = await updateOnboarding({ symptoms });
+        const updated = await updateOnboarding({ symptoms: Object.values(symptoms) });
         setProfile(updated);
         setSaving(false);
     }
@@ -116,7 +110,7 @@ export default function DashboardPage() {
             if (symptoms[key] === label) delete symptoms[key];
         });
         setSaving(true);
-        const updated = await updateOnboarding({ symptoms });
+        const updated = await updateOnboarding({ symptoms: Object.values(symptoms) });
         setProfile(updated);
         setSaving(false);
     }
@@ -130,10 +124,24 @@ export default function DashboardPage() {
         }
     };
 
-    const handleEdit = (id: string, entry: string, mood: string) => {
-        // Note: Edit functionality is included but requires form integration if needed
-        console.log("Edit clicked for ID:", id);
+    const handleEdit = async (id: string, data: any) => {
+        try {
+            setEntries(prev => prev.map(e => 
+                e._id === id ? { ...e, ...data } : e
+            ));
+            // Add API call here if needed
+        } catch (error) {
+            console.error('Failed to update entry:', error);
+        }
     };
+
+    if (isAuthenticated === null) {
+        return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    }
+
+    if (!isAuthenticated) {
+        return null;
+    }
 
     return (
         <div className="min-h-screen bg-[--color-background]">
@@ -277,13 +285,17 @@ export default function DashboardPage() {
                         Journal Entries
                     </h2>
                     <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {entries.map((item) => (
+                        {entries.slice(0, 3).map((item) => (
                             <JournalCard
                                 key={item._id}
                                 id={item._id}
-                                entry={item.entry}
-                                mood={item.mood}
                                 date={item.date}
+                                trimester={item.trimester}
+                                todos={item.todos || []}
+                                completedTodos={item.completedTodos || []}
+                                notes={item.notes}
+                                imageUrls={item.imageUrls || []}
+                                createdAt={item.createdAt}
                                 onEdit={handleEdit}
                                 onDelete={handleDelete}
                             />

@@ -2,7 +2,7 @@ type Props = { label: string; onRemove?: () => void };
 
 export default function SymptomTag({ label, onRemove }: Props) {
   return (
-    <span className="inline-flex items-center gap-2 bg-pink-100 text-[--color-primary] px-3 py-1 rounded-full text-sm">
+    <span className="inline-flex items-center gap-2 bg-pink-100 text-[--color-primary] px-3 py-1 rounded-3xl text-sm">
       {label}
       {onRemove && (
         <button

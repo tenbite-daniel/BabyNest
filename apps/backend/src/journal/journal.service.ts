@@ -12,6 +12,7 @@ export class JournalService {
   ) {}
 
   async create(
+    userId: string,
     date: string,
     trimester: string,
     todos: string[],
@@ -35,6 +36,7 @@ export class JournalService {
     }
 
     const newEntry = new this.journalModel({
+      userId,
       date,
       trimester,
       todos,
@@ -45,12 +47,13 @@ export class JournalService {
     return newEntry.save();
   }
 
-  async findAll(): Promise<JournalEntry[]> {
-    return this.journalModel.find().sort({ createdAt: -1 }).exec();
+  async findByUser(userId: string): Promise<JournalEntry[]> {
+    return this.journalModel.find({ userId }).sort({ createdAt: -1 }).exec();
   }
 
   async update(
     id: string,
+    userId: string,
     date: string,
     trimester: string,
     todos: string[],
@@ -78,11 +81,11 @@ export class JournalService {
       updateData.imageUrls = imageUrls;
     }
 
-    return this.journalModel.findByIdAndUpdate(id, updateData, { new: true }).exec();
+    return this.journalModel.findOneAndUpdate({ _id: id, userId }, updateData, { new: true }).exec();
   }
 
-  async delete(id: string): Promise<boolean> {
-    const result = await this.journalModel.findByIdAndDelete(id).exec();
+  async delete(id: string, userId: string): Promise<boolean> {
+    const result = await this.journalModel.findOneAndDelete({ _id: id, userId }).exec();
     return !!result;
   }
 }

@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@repo/ui/button";
 import { useRouter } from "next/navigation";
+import { logout } from "../lib/api";
 
 const Navbar = () => {
     const router = useRouter();
@@ -38,17 +39,23 @@ const Navbar = () => {
         setIsMenuOpen(!isMenuOpen);
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem("isLoggedIn");
-        localStorage.removeItem("userEmail");
-        localStorage.removeItem("token");
-        setIsLoggedIn(false);
-        setIsMenuOpen(false);
+    const handleLogout = async () => {
+        try {
+            await logout();
+        } catch (error) {
+            console.error("Logout error:", error);
+        } finally {
+            localStorage.removeItem("isLoggedIn");
+            localStorage.removeItem("userEmail");
+            localStorage.removeItem("token");
+            setIsLoggedIn(false);
+            setIsMenuOpen(false);
 
-        // Trigger custom event for auth state change
-        window.dispatchEvent(new CustomEvent("authStateChanged"));
+            // Trigger custom event for auth state change
+            window.dispatchEvent(new CustomEvent("authStateChanged"));
 
-        router.push("/");
+            router.push("/");
+        }
     };
 
     return (
@@ -97,7 +104,7 @@ const Navbar = () => {
                             <Link href="/auth/signup">
                                 <Button
                                     appName="web"
-                                    className="px-4 py-2 bg-white text-[#D9646A] rounded-md hover:bg-gray-100 transition-colors font-medium"
+                                    className="hidden sm:block px-4 py-2 bg-white text-[#D9646A] rounded-md hover:bg-gray-100 transition-colors font-medium"
                                 >
                                     Sign Up
                                 </Button>
@@ -158,13 +165,6 @@ const Navbar = () => {
                                 onClick={() => setIsMenuOpen(false)}
                             >
                                 Dashboard
-                            </Link>
-                            <Link
-                                href="/therapist"
-                                className="px-5 py-3 text-white hover:bg-white/10 transition-colors"
-                                onClick={() => setIsMenuOpen(false)}
-                            >
-                                Therapist
                             </Link>
 
                             <Link
