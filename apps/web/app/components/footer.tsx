@@ -40,7 +40,7 @@ export default function Footer() {
         {/* Support */}
         <div>
           <h3 className="font-semibold text-[var(--color-secondary)] mb-2">
-            Support
+            Supports
           </h3>
           <ul className="space-y-1 text-sm">
             <li><Link href="/about">Community</Link></li>
