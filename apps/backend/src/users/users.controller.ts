@@ -19,7 +19,7 @@ export class UsersController {
     @Body() onboardingData: {
       fullName: string;
       weeksPregnant: number;
-      symptoms: string[];
+      symptoms: Record<string, number>;
       onboardingCompleted: boolean;
     }
   ) {
