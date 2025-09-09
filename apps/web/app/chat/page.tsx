@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import io, { Socket } from 'socket.io-client';
 import { getPreviousChatPartners, getAllUsers } from '../lib/api';
+import { useAuth } from '../hooks/useAuth';
 
 // Define the Message interface to match the backend structure
 interface Message {
@@ -184,23 +185,25 @@ const Chat: React.FC<{ user: string }> = ({ user }) => {
 
 const ChatPage: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(true);
+  const isAuthenticated = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    if (!isAuthenticated) return;
+    
     const userId = localStorage.getItem('userId');
-    
-    if (!token || !userId) {
-      router.push('/auth/login');
-      return;
+    if (userId) {
+      setCurrentUser(userId);
     }
-    
-    setCurrentUser(userId);
-    setIsLoading(false);
-  }, [router]);
+  }, [isAuthenticated]);
 
-  if (isLoading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  if (isAuthenticated === null) {
+    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return <Chat user={currentUser} />;
 };
