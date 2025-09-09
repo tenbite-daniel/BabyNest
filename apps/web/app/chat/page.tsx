@@ -36,7 +36,7 @@ const Chat: React.FC<{ user: string }> = ({ user }) => {
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const socketRef = useRef<Socket | null>(null);
+  const socketRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
