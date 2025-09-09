@@ -15,4 +15,13 @@ export class ChatService {
   async getMessages(room: string): Promise<Message[]> {
     return this.messageModel.find({ room }).sort({ timestamp: 1 }).exec();
   }
+
+  async getPreviousChatPartners(userId: string): Promise<string[]> {
+    const messages = await this.messageModel.find({ sender: userId }).distinct('room');
+    const partners = await Promise.all(messages.map(async (room) => {
+      const [sender, receiver] = room.split('_').sort();
+      return sender === userId ? receiver : sender;
+    }));
+    return [...new Set(partners)].filter(partner => partner !== userId);
+  }
 }
