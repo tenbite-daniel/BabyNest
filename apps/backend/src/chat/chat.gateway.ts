@@ -1,6 +1,28 @@
 import { SubscribeMessage, WebSocketGateway, WebSocketServer, MessageBody, ConnectedSocket } from '@nestjs/websockets';
+import { UsePipes, ValidationPipe } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
+import { IsString, IsNotEmpty } from 'class-validator';
 import { ChatService } from './chat.service';
+
+class JoinRoomDto {
+  @IsString()
+  @IsNotEmpty()
+  room: string;
+}
+
+class ChatMessageDto {
+  @IsString()
+  @IsNotEmpty()
+  room: string;
+  
+  @IsString()
+  @IsNotEmpty()
+  sender: string;
+  
+  @IsString()
+  @IsNotEmpty()
+  message: string;
+}
 
 @WebSocketGateway({ cors: { origin: 'http://localhost:3001' } })
 export class ChatGateway {
@@ -10,23 +32,33 @@ export class ChatGateway {
   constructor(private chatService: ChatService) {}
 
   handleConnection(socket: Socket) {
-    console.log('User connected:', socket.id);
+    console.log('User connected:', socket.id.replace(/[\r\n]/g, ''));
   }
 
   handleDisconnect(socket: Socket) {
-    console.log('User disconnected:', socket.id);
+    console.log('User disconnected:', socket.id.replace(/[\r\n]/g, ''));
   }
 
   @SubscribeMessage('joinRoom')
-  async handleJoinRoom(@MessageBody() { room }: { room: string }, @ConnectedSocket() socket: Socket) {
-    socket.join(room);
-    const messages = await this.chatService.getMessages(room);
-    socket.emit('previousMessages', messages);
+  @UsePipes(ValidationPipe)
+  async handleJoinRoom(@MessageBody() data: JoinRoomDto, @ConnectedSocket() socket: Socket) {
+    try {
+      socket.join(data.room);
+      const messages = await this.chatService.getMessages(data.room);
+      socket.emit('previousMessages', messages);
+    } catch (error) {
+      socket.emit('error', { message: 'Failed to join room' });
+    }
   }
 
   @SubscribeMessage('chatMessage')
-  async handleMessage(@MessageBody() { room, sender, message }: { room: string; sender: string; message: string }) {
-    const savedMessage = await this.chatService.saveMessage(room, sender, message);
-    this.server.to(room).emit('message', savedMessage);
+  @UsePipes(ValidationPipe)
+  async handleMessage(@MessageBody() data: ChatMessageDto) {
+    try {
+      const savedMessage = await this.chatService.saveMessage(data.room, data.sender, data.message);
+      this.server.to(data.room).emit('message', savedMessage);
+    } catch (error) {
+      console.error('Chat message error:', error.message);
+    }
   }
 }
