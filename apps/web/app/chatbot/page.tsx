@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { getProfile } from "../lib/api";
+import { useAuth } from "../hooks/useAuth";
 import Image from "next/image";
 
 type Profile = {
@@ -19,6 +20,7 @@ type Message = {
 
 export default function ChatbotPage() {
     const router = useRouter();
+    const isAuthenticated = useAuth();
     const [input, setInput] = useState("");
     const [profile, setProfile] = useState<Profile | null>(null);
     const [userEmail, setUserEmail] = useState("");
@@ -29,15 +31,9 @@ export default function ChatbotPage() {
     const chatContainerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const isLoggedIn = localStorage.getItem("isLoggedIn");
+        if (!isAuthenticated) return;
+        
         const email = localStorage.getItem("userEmail");
-        const token = localStorage.getItem("token");
-
-        if (isLoggedIn !== "true" || !token) {
-            router.push("/auth/login");
-            return;
-        }
-
         setUserEmail(email || "");
 
         (async () => {
@@ -48,7 +44,7 @@ export default function ChatbotPage() {
                 console.error(e);
             }
         })();
-    }, [router]);
+    }, [isAuthenticated]);
 
     const getTimeGreeting = () => {
         const hour = new Date().getHours();
@@ -105,6 +101,14 @@ export default function ChatbotPage() {
     useEffect(() => {
         scrollToBottom();
     }, [messages, isTyping]);
+
+    if (isAuthenticated === null) {
+        return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    }
+
+    if (!isAuthenticated) {
+        return null;
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 p-4">

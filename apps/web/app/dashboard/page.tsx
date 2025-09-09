@@ -9,6 +9,7 @@ import ProgressBadge from "../components/ProgressBadge";
 import SymptomTag from "../components/SymptomTag";
 import JournalCard from "../components/JournalCard";
 import { getJournalEntries, deleteJournalEntry } from "../lib/api";
+import { useAuth } from "../hooks/useAuth";
 import Image from "next/image";
 
 type Profile = {
@@ -20,7 +21,7 @@ type Profile = {
 
 export default function DashboardPage() {
     const router = useRouter();
-
+    const isAuthenticated = useAuth();
     const [profile, setProfile] = useState<Profile | null>(null);
     const [week, setWeek] = useState<number>(12);
     const [saving, setSaving] = useState(false);
@@ -31,17 +32,11 @@ export default function DashboardPage() {
         { _id: string; entry: string; mood: string; date: string }[]
     >([]);
 
-    // ✅ Check login + load profile
+    // Load profile when authenticated
     useEffect(() => {
-        const isLoggedIn = localStorage.getItem("isLoggedIn");
+        if (!isAuthenticated) return;
+        
         const email = localStorage.getItem("userEmail");
-        const token = localStorage.getItem("token");
-
-        if (isLoggedIn !== "true" || !token) {
-            router.push("/auth/login");
-            return;
-        }
-
         setUserEmail(email || "");
 
         (async () => {
@@ -54,7 +49,7 @@ export default function DashboardPage() {
                 console.error(e);
             }
         })();
-    }, [router]);
+    }, [isAuthenticated]);
 
     // Load journal entries
     useEffect(() => {
@@ -134,6 +129,14 @@ export default function DashboardPage() {
         // Note: Edit functionality is included but requires form integration if needed
         console.log("Edit clicked for ID:", id);
     };
+
+    if (isAuthenticated === null) {
+        return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    }
+
+    if (!isAuthenticated) {
+        return null;
+    }
 
     return (
         <div className="min-h-screen bg-[--color-background]">

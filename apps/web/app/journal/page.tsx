@@ -4,9 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import JournalCard from '../components/JournalCard';
 import { getJournalEntries, createJournalEntry, updateJournalEntry, deleteJournalEntry } from '../lib/api';
+import { useAuth } from '../hooks/useAuth';
 
 const JournalPage: React.FC = () => {
   const router = useRouter();
+  const isAuthenticated = useAuth();
   const [entries, setEntries] = useState<{
     _id: string;
     date: string;
@@ -17,6 +19,14 @@ const JournalPage: React.FC = () => {
     imageUrls: string[];
     createdAt: string;
   }[]>([]);
+
+  if (isAuthenticated === null) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   useEffect(() => {
     fetchEntries();

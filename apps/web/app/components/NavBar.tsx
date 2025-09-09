@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@repo/ui/button";
 import { useRouter } from "next/navigation";
+import { logout } from "../lib/api";
 
 const Navbar = () => {
     const router = useRouter();
@@ -38,17 +39,23 @@ const Navbar = () => {
         setIsMenuOpen(!isMenuOpen);
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem("isLoggedIn");
-        localStorage.removeItem("userEmail");
-        localStorage.removeItem("token");
-        setIsLoggedIn(false);
-        setIsMenuOpen(false);
+    const handleLogout = async () => {
+        try {
+            await logout();
+        } catch (error) {
+            console.error('Logout error:', error);
+        } finally {
+            localStorage.removeItem("isLoggedIn");
+            localStorage.removeItem("userEmail");
+            localStorage.removeItem("token");
+            setIsLoggedIn(false);
+            setIsMenuOpen(false);
 
-        // Trigger custom event for auth state change
-        window.dispatchEvent(new CustomEvent("authStateChanged"));
+            // Trigger custom event for auth state change
+            window.dispatchEvent(new CustomEvent("authStateChanged"));
 
-        router.push("/");
+            router.push("/");
+        }
     };
 
     return (
@@ -182,7 +189,7 @@ const Navbar = () => {
                                 Journal
                             </Link>
                             <Link
-                                href="/journalform"
+                                href="/jouralform"
                                 className="px-5 py-3 text-white hover:bg-white/10 transition-colors"
                                 onClick={() => setIsMenuOpen(false)}
                             >
