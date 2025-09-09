@@ -69,7 +69,7 @@ export default function ProfilePage() {
                 onboardingCompleted: true
             } as any);
 
-            setUserProfile({...userProfile, ...updateData});
+            setUserProfile({...userProfile, ...updateData} as UserProfile);
             setEditingSection(null);
             setEditData({});
         } catch (error) {
@@ -303,7 +303,7 @@ export default function ProfilePage() {
                                                     -
                                                 </button>
                                                 <span className="text-lg font-bold min-w-[40px] text-center" style={{ color: "#D7656A" }}>
-                                                    {rating}/10
+                                                    {String(rating)}/10
                                                 </span>
                                                 <button
                                                     onClick={() => setEditData({...editData, [symptomId]: Math.min(10, (rating as number) + 1)})}
@@ -340,7 +340,7 @@ export default function ProfilePage() {
                                                 {symptomId.replace(/([A-Z])/g, ' $1').trim()}
                                             </span>
                                             <span className="text-lg font-bold" style={{ color: "#D7656A" }}>
-                                                {rating}/10
+                                                {String(rating)}/10
                                             </span>
                                         </div>
                                     </div>
