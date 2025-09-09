@@ -49,11 +49,15 @@ const JournalCard: React.FC<JournalCardProps> = ({
   };
 
   const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % imageUrls.length);
+    if (imageUrls && imageUrls.length > 0) {
+      setCurrentImageIndex((prev) => (prev + 1) % imageUrls.length);
+    }
   };
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + imageUrls.length) % imageUrls.length);
+    if (imageUrls && imageUrls.length > 0) {
+      setCurrentImageIndex((prev) => (prev - 1 + imageUrls.length) % imageUrls.length);
+    }
   };
 
   if (isEditing) {
@@ -140,7 +144,7 @@ const JournalCard: React.FC<JournalCardProps> = ({
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-md mb-4 w-full">
-      {imageUrls.length > 0 && (
+      {imageUrls && imageUrls.length > 0 && (
         <div className="mb-4 relative">
           <img 
             src={imageUrls[currentImageIndex]} 
@@ -174,7 +178,7 @@ const JournalCard: React.FC<JournalCardProps> = ({
         <p className="text-sm text-pink-600 font-medium">{trimester}</p>
       </div>
       
-      {todos.length > 0 && (
+      {todos && todos.length > 0 && (
         <div className="mb-3">
           <p className="text-sm font-medium text-gray-700 mb-1">Todos:</p>
           <ul className="text-sm text-gray-600 space-y-1">

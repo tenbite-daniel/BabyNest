@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import PasswordForm from "../components/PasswordForm";
+import { useAuth } from "../hooks/useAuth";
+import { getProfile, updateOnboarding } from "../lib/api";
 
 interface UserProfile {
     email: string;
@@ -16,6 +18,7 @@ interface UserProfile {
 
 export default function ProfilePage() {
     const router = useRouter();
+    const isAuthenticated = useAuth();
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [editingSection, setEditingSection] = useState<string | null>(null);
@@ -23,43 +26,27 @@ export default function ProfilePage() {
     const [showPasswordForm, setShowPasswordForm] = useState(false);
 
     useEffect(() => {
+        if (!isAuthenticated) {
+            setLoading(false);
+            return;
+        }
+
         const fetchProfile = async () => {
             try {
-                const token = localStorage.getItem("token");
-                if (!token) {
-                    router.push("/auth/login");
-                    return;
-                }
-
-                const response = await fetch("http://localhost:5000/user/profile", {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json",
-                    },
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    setUserProfile(data);
-                } else {
-                    router.push("/auth/login");
-                }
+                const data = await getProfile();
+                setUserProfile(data);
             } catch (error) {
                 console.error("Error fetching profile:", error);
-                router.push("/auth/login");
             } finally {
                 setLoading(false);
             }
         };
 
         fetchProfile();
-    }, [router]);
+    }, [isAuthenticated]);
 
     const updateProfile = async (section: string) => {
         try {
-            const token = localStorage.getItem("token");
-            if (!token) return;
-
             let updateData = {};
             if (section === 'personal') {
                 updateData = {
@@ -77,33 +64,21 @@ export default function ProfilePage() {
                 };
             }
 
-            const response = await fetch("http://localhost:5000/user/onboarding", {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    ...userProfile,
-                    ...updateData,
-                    onboardingCompleted: true
-                })
-            });
+            const updatedProfile = await updateOnboarding({
+                ...updateData,
+                onboardingCompleted: true
+            } as any);
 
-            if (response.ok) {
-                setUserProfile({...userProfile, ...updateData});
-                setEditingSection(null);
-                setEditData({});
-            } else {
-                alert("Failed to update profile");
-            }
+            setUserProfile({...userProfile, ...updateData} as UserProfile);
+            setEditingSection(null);
+            setEditData({});
         } catch (error) {
             console.error("Error updating profile:", error);
             alert("Error updating profile");
         }
     };
 
-    if (loading) {
+    if (isAuthenticated === null || loading) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
@@ -112,6 +87,10 @@ export default function ProfilePage() {
                 </div>
             </div>
         );
+    }
+
+    if (!isAuthenticated) {
+        return null;
     }
 
     if (!userProfile) {
@@ -324,7 +303,7 @@ export default function ProfilePage() {
                                                     -
                                                 </button>
                                                 <span className="text-lg font-bold min-w-[40px] text-center" style={{ color: "#D7656A" }}>
-                                                    {rating}/10
+                                                    {String(rating)}/10
                                                 </span>
                                                 <button
                                                     onClick={() => setEditData({...editData, [symptomId]: Math.min(10, (rating as number) + 1)})}
@@ -361,7 +340,7 @@ export default function ProfilePage() {
                                                 {symptomId.replace(/([A-Z])/g, ' $1').trim()}
                                             </span>
                                             <span className="text-lg font-bold" style={{ color: "#D7656A" }}>
-                                                {rating}/10
+                                                {String(rating)}/10
                                             </span>
                                         </div>
                                     </div>

@@ -43,6 +43,12 @@ export async function resetPassword(email: string, newPassword: string) {
   });
 }
 
+export async function logout() {
+  return request("/auth/logout", {
+    method: "POST",
+  });
+}
+
 /* ---------------- USER PROFILE ---------------- */
 export async function getProfile() {
   return request("/user/profile", { method: "GET" });
@@ -149,6 +155,7 @@ export const api = {
   forgotPassword,
   verifyOtp,
   resetPassword,
+  logout,
 
   // Profile
   getProfile,

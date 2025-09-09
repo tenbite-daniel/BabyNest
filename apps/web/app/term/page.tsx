@@ -52,7 +52,7 @@ export default function TermsPage() {
 
         <p>
           While we strive to provide uninterrupted and high-quality access, we
-          do not guarantee that the platform will always function without
+          do not guarantee that the platform would always function without
           errors, technical interruptions, or downtime. We are not liable for
           any data loss, technical failures, or indirect damages that may arise
           from the use of our platform or reliance on its content.
