@@ -96,15 +96,15 @@ except Exception as e:
 
 
 #Populating the database
-try:
-    vectordb = Chroma.from_documents(
-        documents=chunks,
-        embedding=embeddings,
-        persist_directory=db_directory
-    )
-    logger.info("Successfully populated the Chroma database!")
-except Exception as e:
-    logger.exception("Failed to populate the Chroma database!")
+# try:
+#     vectordb = Chroma.from_documents(
+#         documents=chunks,
+#         embedding=embeddings,
+#         persist_directory=db_directory
+#     )
+#     logger.info("Successfully populated the Chroma database!")
+# except Exception as e:
+#     logger.exception("Failed to populate the Chroma database!")
 
 try:
     vector_retriever = Chroma(
@@ -137,3 +137,4 @@ try:
     logger.info("Successfully created the hybrid search retriever")
 except Exception as e:
     logger.exception("Failed to load the retrievers.")
+
