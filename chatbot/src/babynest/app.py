@@ -36,6 +36,11 @@ logger = logging.getLogger(file)
 
 limiter = Limiter(key_func=get_remote_address, default_limits=["5/minute"])
 
+# LangSmith
+os.environ["LANGSMITH_API_KEY"]=os.getenv("LANGSMITH_API_KEY")
+os.environ["LANGSMITH_TRACING_V2"]="true"
+os.environ["LANGCHAIN_PROJECT"]="BabyNest"
+os.environ["LANGCHAIN_ENDPOINT"]="=https://api.smith.langchain.com"
 
 try:
     app = FastAPI(
@@ -208,4 +213,4 @@ async def end_session(request: SessionEndRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    uvicorn.run(app, host="0.0.0.0", port=8003)
