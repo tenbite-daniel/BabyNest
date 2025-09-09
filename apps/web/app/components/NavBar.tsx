@@ -43,7 +43,7 @@ const Navbar = () => {
         try {
             await logout();
         } catch (error) {
-            console.error('Logout error:', error);
+            console.error("Logout error:", error);
         } finally {
             localStorage.removeItem("isLoggedIn");
             localStorage.removeItem("userEmail");
@@ -104,7 +104,7 @@ const Navbar = () => {
                             <Link href="/auth/signup">
                                 <Button
                                     appName="web"
-                                    className="px-4 py-2 bg-white text-[#D9646A] rounded-md hover:bg-gray-100 transition-colors font-medium"
+                                    className="hidden sm:block px-4 py-2 bg-white text-[#D9646A] rounded-md hover:bg-gray-100 transition-colors font-medium"
                                 >
                                     Sign Up
                                 </Button>
@@ -166,13 +166,6 @@ const Navbar = () => {
                             >
                                 Dashboard
                             </Link>
-                            <Link
-                                href="/therapist"
-                                className="px-5 py-3 text-white hover:bg-white/10 transition-colors"
-                                onClick={() => setIsMenuOpen(false)}
-                            >
-                                Therapist
-                            </Link>
 
                             <Link
                                 href="/chat"
@@ -189,7 +182,7 @@ const Navbar = () => {
                                 Journal
                             </Link>
                             <Link
-                                href="/jouralform"
+                                href="/journalform"
                                 className="px-5 py-3 text-white hover:bg-white/10 transition-colors"
                                 onClick={() => setIsMenuOpen(false)}
                             >

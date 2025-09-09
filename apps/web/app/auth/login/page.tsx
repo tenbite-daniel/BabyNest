@@ -45,7 +45,7 @@ export default function LoginPage() {
 
             // Check onboarding status from database
             try {
-                const profileResponse = await fetch('http://localhost:5000/user/profile', {
+                const profileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/profile`, {
                     headers: {
                         'Authorization': `Bearer ${data.access_token}`,
                         'Content-Type': 'application/json'
