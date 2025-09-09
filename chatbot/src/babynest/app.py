@@ -17,11 +17,11 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
-from chat_models import ChatRequest, ChatResponse, SessionEndRequest
-from components import retriever, AdaptiveConversation, session_memory, ValidationTool, ReasoningTool, GeneralChatTool
-from db_handler import text_splitter
+from .chat_models import ChatRequest, ChatResponse, SessionEndRequest
+from .components import retriever, AdaptiveConversation, session_memory, ValidationTool, ReasoningTool, GeneralChatTool
+from .db_handler import text_splitter
 from dotenv import load_dotenv
-from crew import Babynest, get_llm, llm_clients
+from .crew import Babynest, get_llm, llm_clients
 
 
 load_dotenv()
@@ -39,7 +39,7 @@ limiter = Limiter(key_func=get_remote_address, default_limits=["5/minute"])
 # LangSmith
 os.environ["LANGSMITH_API_KEY"]=os.getenv("LANGSMITH_API_KEY")
 os.environ["LANGSMITH_TRACING_V2"]="true"
-os.environ["LANGCHAIN_PROJECT"]="BabyNest"
+os.environ["LANGCHAIN_PROJECT"]="BabyNestBot"
 os.environ["LANGCHAIN_ENDPOINT"]="=https://api.smith.langchain.com"
 
 try:

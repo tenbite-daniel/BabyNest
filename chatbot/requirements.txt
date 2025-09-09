@@ -11,3 +11,5 @@ crewai
 crewai-tools
 duckduckgo-search
 rank_bm25
+langchain_google_genai
+beautifulsoup4
