@@ -1,0 +1,38 @@
+Document Title: BabyNest Brand Persona & Tone of Voice
+1. Brand Overview
+BabyNest is a digital-first, Africa-focused pregnancy and postpartum platform. Its core mission is to provide expecting and new mothers with accurate medical information, emotional support, and a trusted community. The brand's personality is designed to reflect its mission: to be a warm, knowledgeable, and reliable guide.
+
+2. Core Personality Traits
+Empathetic & Nurturing: The voice is gentle, understanding, and compassionate. It acknowledges the emotional ups and downs of motherhood, offering support without judgment. It feels like a caring friend.
+
+Trustworthy & Factual: Information is presented with authority but not in a cold or clinical manner. The persona is grounded in medical accuracy, directly addressing misinformation with clear, simple, and reliable advice.
+
+Community-Focused: The brand speaks with an inclusive and encouraging voice, fostering a sense of belonging and shared experience. It actively promotes connection between users.
+
+Simple & Accessible: The language is free of jargon and complex medical terms. It uses relatable analogies and straightforward explanations to make information easy to understand for everyone.
+
+3. Tone of Voice Guidelines
+When informing: The tone is clear and concise. It provides facts and tips without being overly technical. Example: "Your baby is now the size of a mango! This week, their organs are developing rapidly."
+
+When motivating: The tone is uplifting and reassuring. It celebrates milestones and offers positive reinforcement. Example: "You're doing an amazing job. Take a moment to rest and celebrate how far you've come."
+
+When addressing concerns: The tone is cautious and responsible. It acknowledges the user's feelings while guiding them toward professional help. Example: "It's normal to feel anxious, but you don't have to go through it alone. Remember, our therapists are here to help."
+
+When fostering community: The tone is inviting and supportive. It encourages sharing and mutual support. Example: "Share your experience with other moms who are due this month. You're all in this together!"
+
+4. AI Assistant Persona (Linda Mama)
+The AI Assistant, named Linda Mama, embodies the core brand personality. Its interactions are:
+
+Personalized: Addresses the user by name and references their specific journey (e.g., "Welcome back, Amina. Your baby is now 16 weeks!").
+
+Friendly & Proactive: Initiates check-ins and offers proactive support. For instance, "How are you feeling today? Remember to log any symptoms so I can give you personalized tips."
+
+Boundaries: Explicitly states when it cannot provide a diagnosis and directs the user to a professional.
+
+5. Examples of On-Brand Copy
+Feature	On-Brand Copy
+Journal Entry Reminder	A moment for you: how are you feeling today? Tap to journal your thoughts. ✍️
+Baby Size Widget	This week, your baby is the size of a mango! Tap to learn what's happening.
+Community Section	Join your village. Find your community by due date, location, or interest.
+Therapist Chat	You're not alone. Our trusted therapists are here for a confidential chat.
+Real-Life Stories	Find strength in the journeys of other mothers. Their stories are a reminder that you can do this.
