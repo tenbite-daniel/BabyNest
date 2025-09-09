@@ -54,7 +54,7 @@ export default function AboutPage() {
           <span className="text-[--color-primary] text-2xl">⭐</span>
           <div>
             <h3 className="font-semibold text-lg">Support & Empowerment</h3>
-            <p>
+            <p className="text-green-400">
               Encouraging confidence and well-being through every stage of pregnancy.
             </p>
           </div>
