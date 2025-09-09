@@ -15,6 +15,7 @@ const handler = NextAuth({
     async signIn({ user, account }) {
       if (account?.provider === "google") {
         try {
+          console.log('Attempting Google sign-in for:', user.email);
           const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/google-signin`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -27,15 +28,21 @@ const handler = NextAuth({
           
           if (response.ok) {
             const data = await response.json();
+            console.log('Backend response success:', data);
             user.accessToken = data.access_token;
             user.userData = data.user;
             return true;
+          } else {
+            const errorText = await response.text();
+            console.error('Backend error:', response.status, errorText);
+            return false;
           }
         } catch (error) {
           console.error('Google sign-in error:', error);
+          return false;
         }
       }
-      return false;
+      return true;
     },
     async jwt({ token, user }) {
       if (user?.accessToken) {

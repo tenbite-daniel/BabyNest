@@ -121,12 +121,20 @@ export class AuthService {
         fullName: googleData.name,
         googleId: googleData.googleId,
       });
-    } else if (!user.googleId) {
-      // Link existing user with Google
-      await this.usersService.updateGoogleId((user as any)._id.toString(), googleData.googleId);
+    } else {
+      // Update existing user with missing fields
+      const updates: any = {};
+      if (!user.googleId) updates.googleId = googleData.googleId;
+      if (!user.username) updates.username = `${googleData.email.split('@')[0]}_${Date.now()}`;
+      if (!user.fullName) updates.fullName = googleData.name;
+      
+      if (Object.keys(updates).length > 0) {
+        await this.usersService.updateUser((user as any)._id.toString(), updates);
+        user = { ...user, ...updates };
+      }
     }
 
-    const { password, ...result } = (user as any).toObject();
+    const { password, ...result } = (user as any).toObject ? (user as any).toObject() : user;
     const payload = { email: result.email, sub: result._id };
     return {
       access_token: this.jwtService.sign(payload),

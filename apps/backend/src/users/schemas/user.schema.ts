@@ -11,10 +11,10 @@ export class User {
   @Prop()
   password?: string;
 
-  @Prop({ unique: true, sparse: true })
-  username?: string;
+  @Prop({ required: true, unique: true })
+  username: string;
 
-  @Prop({ unique: true, sparse: true })
+  @Prop()
   phoneNumber?: string;
 
   @Prop({ unique: true, sparse: true })

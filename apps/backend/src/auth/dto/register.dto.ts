@@ -12,5 +12,5 @@ export class RegisterDto {
   username: string;
 
   @IsString()
-  phoneNumber: string;
+  phoneNumber?: string;
 }

@@ -109,30 +109,41 @@ export class UsersService {
       return user;
     }
 
+    const baseUsername = googleUser.email.split('@')[0];
+    const timestamp = Date.now();
     user = new this.userModel({
       email: googleUser.email,
       fullName: googleUser.name,
       googleId: googleUser.googleId,
-      username: googleUser.email.split('@')[0],
+      username: `${baseUsername}_${timestamp}`,
     });
     
     return user.save();
   }
 
   async createGoogleUser(googleData: { email: string; fullName: string; googleId: string }): Promise<UserDocument> {
-    const user = new this.userModel({
+    const baseUsername = googleData.email.split('@')[0];
+    const timestamp = Date.now();
+    const userData: any = {
       email: googleData.email,
       fullName: googleData.fullName,
       googleId: googleData.googleId,
-      username: googleData.email.split('@')[0],
-      password: null,
+      username: `${baseUsername}_${timestamp}`,
       onboardingCompleted: false,
-    });
+    };
     
+    // Explicitly exclude phoneNumber to avoid duplicate key error
+    delete userData.phoneNumber;
+    
+    const user = new this.userModel(userData);
     return user.save();
   }
 
   async updateGoogleId(userId: string, googleId: string): Promise<void> {
     await this.userModel.findByIdAndUpdate(userId, { googleId }).exec();
+  }
+
+  async updateUser(userId: string, updates: Partial<User>): Promise<UserDocument | null> {
+    return this.userModel.findByIdAndUpdate(userId, updates, { new: true }).exec();
   }
 }
