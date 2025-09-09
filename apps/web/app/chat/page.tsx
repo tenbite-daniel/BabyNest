@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import io, { Socket } from 'socket.io-client';
 import { getPreviousChatPartners, getAllUsers } from '../lib/api';
-import { useAuth } from '../hooks/useAuth';
 
 // Define the Message interface to match the backend structure
 interface Message {
@@ -19,6 +18,7 @@ interface User {
   username?: string;
 }
 
+// Define the socket server URL
 const SOCKET_SERVER_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000';
 
 const sanitizeMessage = (message: string): string => {
@@ -36,8 +36,12 @@ const Chat: React.FC<{ user: string }> = ({ user }) => {
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const socketRef = useRef<any>(null);
+  const [pregnancyWeek, setPregnancyWeek] = useState('');
+  const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Router for navigation
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchData() {
@@ -59,7 +63,6 @@ const Chat: React.FC<{ user: string }> = ({ user }) => {
   }, [user]);
 
   useEffect(() => {
-    // Initialize socket once
     if (!socketRef.current) {
       socketRef.current = io(SOCKET_SERVER_URL);
     }
@@ -76,11 +79,9 @@ const Chat: React.FC<{ user: string }> = ({ user }) => {
     const room = [user, selectedUser].sort().join('_');
     socketRef.current.emit('joinRoom', { room });
     
-    // Remove previous listeners
     socketRef.current.off('previousMessages');
     socketRef.current.off('message');
     
-    // Add new listeners
     socketRef.current.on('previousMessages', (prevMessages: Message[]) => {
       setMessages(prevMessages);
     });
@@ -104,7 +105,67 @@ const Chat: React.FC<{ user: string }> = ({ user }) => {
 
   const handleSelectUser = (partnerId: string) => {
     setSelectedUser(partnerId);
-    setMessages([]); // Clear messages when switching users
+    setMessages([]);
+  };
+
+  const handleGetTips = async () => {
+    if (!user || !pregnancyWeek) {
+      alert('Please enter your pregnancy week.');
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/user_onboard', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: user,
+          email: 'user_email@example.com', // Placeholder
+          pregnancyWeek: pregnancyWeek,
+        }),
+      });
+
+      if (response.ok) {
+        alert('Pregnancy tips request sent successfully!');
+      } else {
+        alert('Failed to send pregnancy tips request.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred while sending the request.');
+    }
+  };
+
+  const handleEndSession = async () => {
+    if (!selectedUser) {
+      alert('No active session to end.');
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/end_session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          session_id: selectedUser,
+        }),
+      });
+
+      if (response.ok) {
+        alert('Session ended and summarized successfully!');
+        setSelectedUser(null);
+        setMessages([]);
+      } else {
+        alert('Failed to end the session.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred while ending the session.');
+    }
   };
 
   return (
@@ -150,6 +211,23 @@ const Chat: React.FC<{ user: string }> = ({ user }) => {
       <div className="w-3/4 p-4">
         {selectedUser ? (
           <div className="flex flex-col h-full">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="number"
+                  value={pregnancyWeek}
+                  onChange={(e) => setPregnancyWeek(e.target.value)}
+                  placeholder="Week of pregnancy"
+                  className="p-2 border rounded-lg w-40"
+                />
+                <button onClick={handleGetTips} className="p-2 bg-blue-500 text-white rounded-lg">
+                  Pregnancy Tips
+                </button>
+              </div>
+              <button onClick={handleEndSession} className="p-2 bg-red-500 text-white rounded-lg">
+                End Session
+              </button>
+            </div>
             <div className="flex-1 overflow-y-auto space-y-2">
               {messages.map((msg, index) => (
                 <div key={`${msg.sender}-${msg.timestamp}-${index}`} className={`flex ${msg.sender === user ? 'justify-end' : 'justify-start'}`}>
@@ -185,25 +263,23 @@ const Chat: React.FC<{ user: string }> = ({ user }) => {
 
 const ChatPage: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<string>('');
-  const isAuthenticated = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    if (!isAuthenticated) return;
-    
+    const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
-    if (userId) {
-      setCurrentUser(userId);
+    
+    if (!token || !userId) {
+      router.push('/auth/login');
+      return;
     }
-  }, [isAuthenticated]);
+    
+    setCurrentUser(userId);
+    setIsLoading(false);
+  }, [router]);
 
-  if (isAuthenticated === null) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
-  }
-
-  if (!isAuthenticated) {
-    return null;
-  }
+  if (isLoading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
 
   return <Chat user={currentUser} />;
 };

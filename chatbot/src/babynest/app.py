@@ -1,10 +1,12 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 
 from uuid import uuid4
 import logging
 import os
+import httpx
 
 from langchain_groq import ChatGroq
 from langchain.prompts import ChatPromptTemplate
@@ -36,11 +38,6 @@ logger = logging.getLogger(file)
 
 limiter = Limiter(key_func=get_remote_address, default_limits=["5/minute"])
 
-# LangSmith
-os.environ["LANGSMITH_API_KEY"]=os.getenv("LANGSMITH_API_KEY")
-os.environ["LANGSMITH_TRACING_V2"]="true"
-os.environ["LANGCHAIN_PROJECT"]="BabyNestBot"
-os.environ["LANGCHAIN_ENDPOINT"]="=https://api.smith.langchain.com"
 
 try:
     app = FastAPI(
@@ -189,6 +186,61 @@ async def external_functions():
     pass
 
 
+@app.post("/api/n8n_webhook")
+async def handle_n8n_webhook(request: Request):
+    """
+    Endpoint to receive data and forward it to the n8n webhook.
+    """
+    try:
+        data = await request.json()
+        logger.info(f"Received data for n8n webhook: {data}")
+        
+        # The n8n webhook URL to forward the data to
+        n8n_webhook_url = "https://unverifiedtwo.app.n8n.cloud/webhook/e77bbcc7-772f-4f7e-93ca-d16daa68e0be"
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(n8n_webhook_url, json=data)
+            response.raise_for_status()  # Raise an exception for HTTP errors
+            
+        logger.info(f"Successfully forwarded data to n8n. Status: {response.status_code}")
+        return {"status": "success", "message": "Data forwarded to n8n webhook."}
+        
+    except Exception as e:
+        logger.error(f"Failed to handle n8n webhook request: {e}")
+        raise HTTPException(status_code=500, detail="Failed to process webhook request.")
+
+
+# New Pydantic model for the user's data
+class UserDataRequest(BaseModel):
+    name: str
+    email: str
+    pregnancyWeek: str
+
+@app.post("/api/user_onboard")
+async def onboard_user(request: UserDataRequest):
+    """
+    Endpoint to receive user's name, email, and pregnancy week, and forward it to the n8n webhook.
+    """
+    try:
+        # Convert the Pydantic model to a dictionary to send as JSON
+        user_data = request.model_dump()
+        logger.info(f"Received user onboarding data: {user_data}")
+        
+        # The n8n webhook URL to forward the data to
+        n8n_webhook_url = "https://unverifiedtwo.app.n8n.cloud/webhook/e77bbcc7-772f-4f7e-93ca-d16daa68e0be"
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(n8n_webhook_url, json=user_data)
+            response.raise_for_status()  # Raise an exception for HTTP errors
+            
+        logger.info(f"Successfully forwarded user data to n8n. Status: {response.status_code}")
+        return {"status": "success", "message": "User data forwarded to n8n webhook."}
+        
+    except Exception as e:
+        logger.error(f"Failed to onboard user and send data to n8n webhook: {e}")
+        raise HTTPException(status_code=500, detail="Failed to process user data and send to webhook.")
+
+
 @app.post("/api/end_session")
 async def end_session(request: SessionEndRequest):
     """Summarize session and save to DB."""
@@ -213,4 +265,4 @@ async def end_session(request: SessionEndRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8003)
+    uvicorn.run(app, host="0.0.0.0", port=8001)
