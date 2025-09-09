@@ -1,0 +1,40 @@
+plan_conversation:
+  description: "Analyze the user's request. If it's a broad or vague query, formulate specific, leading questions to gather more information. If the query is direct (e.g., 'how to breastfeed'), create a detailed plan for the research and response generation."
+  expected_output: "Either a set of clarifying questions to ask the user, or a detailed, step-by-step plan for the subsequent tasks."
+  agent: planner
+
+research_and_draft:
+  description: "Execute the research plan provided by the 'plan_conversation' task. The Maternal Health Researcher will find clinical information. This task should be initiated only after the plan is ready."
+  expected_output: "Raw, unrefined medical information and data related to the user's query."
+  agent: maternal_health_researcher
+  context: [plan_conversation]
+
+refine_health_info:
+  description: "Take the raw research data from the 'research_and_draft' task and transform it into an easy-to-understand, empathetic, and actionable format. This involves simplifying complex medical terms and structuring the information for clarity."
+  expected_output: "A refined, user-friendly summary of the medical information."
+  agent: refiner
+  context: [research_and_draft]
+
+get_testimonials:
+  description: "Based on the user's query and the refined information, search for relevant community testimonials. This task is optional but should be triggered if the user's query implies a need for peer support (e.g., 'I feel alone')."
+  expected_output: "A curated summary of real-life stories and peer experiences."
+  agent: community_testimonials
+  context: [refine_health_info]
+
+synthesize_and_personalize:
+  description: "Take the refined health information and, if available, the community testimonials, and combine them into a single, personalized, and empathetic guidance document. This agent adds a human touch to the factual data."
+  expected_output: "A cohesive, personalized, and empathetic guidance message."
+  agent: personalized_guidance
+  context: [refine_health_info, get_testimonials]
+
+moderation_and_finalization:
+  description: "Review all the generated outputs (refined health info, testimonials, and personalized guidance) for safety, tone, and accuracy. The moderator will flag any potential issues."
+  expected_output: "A final, approved version of the combined content, ready for summarization."
+  agent: moderator
+  context: [synthesize_and_personalize]
+
+final_summarization:
+  description: "Take the moderated and approved content and synthesize it into the final, concise, and straight-to-the-point user-facing response. The response should be as brief as possible while remaining helpful."
+  expected_output: "A final, concise, and coherent user-facing response."
+  agent: summarizer
+  context: [moderation_and_finalization]

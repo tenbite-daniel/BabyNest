@@ -1,0 +1,13 @@
+langchain
+langchain_groq
+langchain_community
+langchain_chroma
+chromadb
+fastapi
+pydantic
+uvicorn
+slowapi
+crewai
+crewai-tools
+duckduckgo-search
+rank_bm25
