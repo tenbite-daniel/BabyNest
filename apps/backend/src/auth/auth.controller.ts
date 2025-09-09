@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Request, Get } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request, Get, Response } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -8,6 +8,7 @@ import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { LocalAuthGuard } from '../common/guards/local-auth.guard';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller('auth')
@@ -50,5 +51,27 @@ export class AuthController {
   @Post('change-password')
   async changePassword(@CurrentUser() user, @Body() changePasswordDto: ChangePasswordDto) {
     return this.authService.changePassword(user._id, changePasswordDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  async logout() {
+    return { message: 'Logged out successfully' };
+  }
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth() {}
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthRedirect(@Request() req, @Response() res) {
+    const user = await this.authService.googleLogin(req.user);
+    res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${user.access_token}`);
+  }
+
+  @Post('google-signin')
+  async googleSignIn(@Body() googleUser: { email: string; name: string; googleId: string }) {
+    return this.authService.googleSignIn(googleUser);
   }
 }

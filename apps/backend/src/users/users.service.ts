@@ -77,6 +77,9 @@ export class UsersService {
       throw new UnauthorizedException('User not found');
     }
 
+    if (!user.password) {
+      throw new UnauthorizedException('Cannot change password for OAuth users');
+    }
     const isOldPasswordValid = await bcrypt.compare(changePasswordDto.oldPassword, user.password);
     if (!isOldPasswordValid) {
       throw new UnauthorizedException('Current password is incorrect');
@@ -93,5 +96,43 @@ export class UsersService {
       .find({ _id: { $ne: excludeUserId } })
       .select('_id fullName username email')
       .exec();
+  }
+
+  async findOrCreateGoogleUser(googleUser: { email: string; name: string; googleId: string }): Promise<UserDocument> {
+    let user = await this.userModel.findOne({ email: googleUser.email }).exec();
+    
+    if (user) {
+      if (!user.googleId) {
+        user.googleId = googleUser.googleId;
+        await user.save();
+      }
+      return user;
+    }
+
+    user = new this.userModel({
+      email: googleUser.email,
+      fullName: googleUser.name,
+      googleId: googleUser.googleId,
+      username: googleUser.email.split('@')[0],
+    });
+    
+    return user.save();
+  }
+
+  async createGoogleUser(googleData: { email: string; fullName: string; googleId: string }): Promise<UserDocument> {
+    const user = new this.userModel({
+      email: googleData.email,
+      fullName: googleData.fullName,
+      googleId: googleData.googleId,
+      username: googleData.email.split('@')[0],
+      password: null,
+      onboardingCompleted: false,
+    });
+    
+    return user.save();
+  }
+
+  async updateGoogleId(userId: string, googleId: string): Promise<void> {
+    await this.userModel.findByIdAndUpdate(userId, { googleId }).exec();
   }
 }

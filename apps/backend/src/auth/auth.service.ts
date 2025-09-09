@@ -20,7 +20,7 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.usersService.findByEmail(email);
-    if (user && await bcrypt.compare(password, user.password)) {
+    if (user && user.password && await bcrypt.compare(password, user.password)) {
       const { password, ...result } = (user as any).toObject();
       return result;
     }
@@ -95,5 +95,42 @@ export class AuthService {
 
   async changePassword(userId: string, changePasswordDto: ChangePasswordDto) {
     return this.usersService.changePassword(userId, changePasswordDto);
+  }
+
+  async googleLogin(user: any) {
+    const payload = { email: user.email, sub: user._id };
+    return {
+      access_token: this.jwtService.sign(payload),
+      user: {
+        id: user._id,
+        email: user.email,
+        username: user.username || user.displayName,
+        phoneNumber: user.phoneNumber,
+        role: user.role,
+      },
+    };
+  }
+
+  async googleSignIn(googleData: { email: string; name: string; googleId: string }) {
+    let user = await this.usersService.findByEmail(googleData.email);
+    
+    if (!user) {
+      // Create new user from Google data
+      user = await this.usersService.createGoogleUser({
+        email: googleData.email,
+        fullName: googleData.name,
+        googleId: googleData.googleId,
+      });
+    } else if (!user.googleId) {
+      // Link existing user with Google
+      await this.usersService.updateGoogleId((user as any)._id.toString(), googleData.googleId);
+    }
+
+    const { password, ...result } = (user as any).toObject();
+    const payload = { email: result.email, sub: result._id };
+    return {
+      access_token: this.jwtService.sign(payload),
+      user: result,
+    };
   }
 }
