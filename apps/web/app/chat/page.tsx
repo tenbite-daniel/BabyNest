@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import io, { Socket } from 'socket.io-client';
 import { getPreviousChatPartners, getAllUsers } from '../lib/api';
-
+//
+// Implement frontend integration
 // Define the Message interface to match the backend structure
 interface Message {
   sender: string;
