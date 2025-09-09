@@ -98,7 +98,7 @@ export default function Home() {
           make every mother feel informed, supported, and empowered, no matter
           where she is.
         </p>
-        <button className="mt-6 px-6 py-2 rounded-2xl bg-[var(--color-secondary)] text-white font-semibold hover:bg-[var(--color-primary)] transition">
+        <button className="mt-6 px-6 py-2 rounded-2xl bg-[var(--color-secondary)] text-black font-semibold hover:bg-[var(--color-primary)] transition">
           Read More About Us
         </button>
       </section>
