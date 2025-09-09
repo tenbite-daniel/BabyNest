@@ -28,11 +28,18 @@ export default function DashboardPage() {
     const [calendarDate, setCalendarDate] = useState(new Date());
     const [newSymptom, setNewSymptom] = useState("");
     const [userEmail, setUserEmail] = useState("");
-    const [entries, setEntries] = useState<
-        { _id: string; entry: string; mood: string; date: string }[]
-    >([]);
+    const [entries, setEntries] = useState<{
+        _id: string;
+        date: string;
+        trimester: string;
+        todos: string[];
+        completedTodos: boolean[];
+        notes: string;
+        imageUrls: string[];
+        createdAt: string;
+    }[]>([]);
 
-    // Load profile when authenticated
+    // Load profile and journal entries when authenticated
     useEffect(() => {
         if (!isAuthenticated) return;
         
@@ -49,22 +56,14 @@ export default function DashboardPage() {
                 console.error(e);
             }
         })();
-    }, [isAuthenticated]);
-
-    // Load journal entries
-    useEffect(() => {
+        
         fetchEntries();
-    }, []);
+    }, [isAuthenticated]);
 
     const fetchEntries = async () => {
         try {
             const data = await getJournalEntries();
-            setEntries(
-                data.map((item: any) => ({
-                    ...item,
-                    date: new Date(item.date).toLocaleDateString(),
-                }))
-            );
+            setEntries(data);
         } catch (error) {
             console.error("Failed to fetch entries:", error);
         }
@@ -125,9 +124,15 @@ export default function DashboardPage() {
         }
     };
 
-    const handleEdit = (id: string, entry: string, mood: string) => {
-        // Note: Edit functionality is included but requires form integration if needed
-        console.log("Edit clicked for ID:", id);
+    const handleEdit = async (id: string, data: any) => {
+        try {
+            setEntries(prev => prev.map(e => 
+                e._id === id ? { ...e, ...data } : e
+            ));
+            // Add API call here if needed
+        } catch (error) {
+            console.error('Failed to update entry:', error);
+        }
     };
 
     if (isAuthenticated === null) {
@@ -280,13 +285,17 @@ export default function DashboardPage() {
                         Journal Entries
                     </h2>
                     <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {entries.map((item) => (
+                        {entries.slice(0, 3).map((item) => (
                             <JournalCard
                                 key={item._id}
                                 id={item._id}
-                                entry={item.entry}
-                                mood={item.mood}
                                 date={item.date}
+                                trimester={item.trimester}
+                                todos={item.todos || []}
+                                completedTodos={item.completedTodos || []}
+                                notes={item.notes}
+                                imageUrls={item.imageUrls || []}
+                                createdAt={item.createdAt}
                                 onEdit={handleEdit}
                                 onDelete={handleDelete}
                             />

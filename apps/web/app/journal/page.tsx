@@ -20,6 +20,12 @@ const JournalPage: React.FC = () => {
     createdAt: string;
   }[]>([]);
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchEntries();
+    }
+  }, [isAuthenticated]);
+
   if (isAuthenticated === null) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
@@ -27,10 +33,6 @@ const JournalPage: React.FC = () => {
   if (!isAuthenticated) {
     return null;
   }
-
-  useEffect(() => {
-    fetchEntries();
-  }, []);
 
   const fetchEntries = async () => {
     try {
