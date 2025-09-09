@@ -8,7 +8,7 @@ from langchain_groq import ChatGroq
 from langchain_google_genai import ChatGoogleGenerativeAI
 from typing import List
 from dotenv import load_dotenv
-from db_handler import logger, stored_data
+from .db_handler import logger, stored_data
 import os
 
 load_dotenv()

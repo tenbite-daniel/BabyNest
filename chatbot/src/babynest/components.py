@@ -5,7 +5,7 @@ from langchain_core.documents import Document
 from langchain_core.runnables import RunnablePassthrough
 from typing import List, Tuple, Dict
 
-from db_handler import stored_data, logger, text_splitter
+from .db_handler import stored_data, logger, text_splitter
 
 class RAGTool:
     def __init__(self, retriever_instance):
