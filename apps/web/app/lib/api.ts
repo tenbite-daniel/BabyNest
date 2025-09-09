@@ -63,22 +63,67 @@ export async function updateOnboarding(
 }
 
 /* ---------------- JOURNAL ---------------- */
-export async function createJournalEntry(entry: string, mood: string) {
-  return request("/journal", {
-    method: "POST",
-    body: JSON.stringify({ entry, mood }),
+export async function createJournalEntry(data: any) {
+  const formData = new FormData();
+  formData.append('date', data.date);
+  formData.append('trimester', data.trimester);
+  formData.append('todos', JSON.stringify(data.todos));
+  formData.append('notes', data.notes);
+  
+  // Append images
+  data.images?.forEach((image: File, index: number) => {
+    formData.append(`images`, image);
   });
+
+  const res = await fetch(`${API_BASE_URL}/journal`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+    },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(errorText || `API error: ${res.status}`);
+  }
+
+  return res.json();
 }
 
 export async function getJournalEntries() {
   return request("/journal", { method: "GET" });
 }
 
-export async function updateJournalEntry(id: string, entry: string, mood: string) {
-  return request(`/journal/${id}`, {
-    method: "PUT",
-    body: JSON.stringify({ entry, mood }),
+export async function updateJournalEntry(id: string, data: any) {
+  const formData = new FormData();
+  formData.append('date', data.date);
+  formData.append('trimester', data.trimester);
+  formData.append('todos', JSON.stringify(data.todos));
+  if (data.completedTodos) {
+    formData.append('completedTodos', JSON.stringify(data.completedTodos));
+  }
+  formData.append('notes', data.notes);
+  
+  // Append new images if any
+  data.images?.forEach((image: File) => {
+    formData.append(`images`, image);
   });
+
+  const res = await fetch(`${API_BASE_URL}/journal/${id}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+    },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(errorText || `API error: ${res.status}`);
+  }
+
+  return res.json();
 }
 
 export async function deleteJournalEntry(id: string) {

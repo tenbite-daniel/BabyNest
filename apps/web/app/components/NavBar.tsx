@@ -182,7 +182,7 @@ const Navbar = () => {
                                 Journal
                             </Link>
                             <Link
-                                href="/jouralform"
+                                href="/journalform"
                                 className="px-5 py-3 text-white hover:bg-white/10 transition-colors"
                                 onClick={() => setIsMenuOpen(false)}
                             >

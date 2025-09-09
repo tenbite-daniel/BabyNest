@@ -30,7 +30,7 @@ export default function MiniCalendar({ current, onPrev, onNext }: Props) {
         <button onClick={onNext} className="px-2 py-1 rounded hover:bg-gray-100">›</button>
       </div>
       <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 mb-1">
-        {["S","M","T","W","T","F","S"].map(d => <div key={d}>{d}</div>)}
+        {["S","M","T","W","T","F","S"].map((d, i) => <div key={i}>{d}</div>)}
       </div>
       <div className="grid grid-cols-7 gap-1 text-center">
         {grid.map((d, i) => (
