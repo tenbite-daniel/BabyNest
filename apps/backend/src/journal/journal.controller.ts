@@ -9,23 +9,28 @@ import {
   UseInterceptors,
   UploadedFiles,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { JournalService } from './journal.service';
 import { Types } from 'mongoose';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller('journal')
+@UseGuards(JwtAuthGuard)
 export class JournalController {
   constructor(private readonly journalService: JournalService) {}
 
   @Get()
-  async findAll() {
-    return this.journalService.findAll();
+  async findAll(@CurrentUser() user: any) {
+    return this.journalService.findByUser(user._id);
   }
 
   @Post()
   @UseInterceptors(FilesInterceptor('images'))
   async create(
+    @CurrentUser() user: any,
     @Body() body: any,
     @UploadedFiles() images: Express.Multer.File[],
   ) {
@@ -41,12 +46,13 @@ export class JournalController {
       throw new BadRequestException('Invalid JSON format in todos or completedTodos');
     }
     
-    return this.journalService.create(date, trimester, todosArray, completedTodosArray, notes, images);
+    return this.journalService.create(user._id, date, trimester, todosArray, completedTodosArray, notes, images);
   }
 
   @Put(':id')
   @UseInterceptors(FilesInterceptor('images'))
   async update(
+    @CurrentUser() user: any,
     @Param('id') id: string,
     @Body() body: any,
     @UploadedFiles() images: Express.Multer.File[],
@@ -67,16 +73,16 @@ export class JournalController {
       throw new BadRequestException('Invalid JSON format in todos or completedTodos');
     }
     
-    return this.journalService.update(id, date, trimester, todosArray, completedTodosArray, notes, images);
+    return this.journalService.update(id, user._id, date, trimester, todosArray, completedTodosArray, notes, images);
   }
 
   @Delete(':id')
-  async delete(@Param('id') id: string) {
+  async delete(@CurrentUser() user: any, @Param('id') id: string) {
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Invalid journal entry ID');
     }
     
-    const deleted = await this.journalService.delete(id);
+    const deleted = await this.journalService.delete(id, user._id);
     if (!deleted) {
       throw new BadRequestException('Journal entry not found');
     }

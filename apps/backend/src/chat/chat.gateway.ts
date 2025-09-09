@@ -24,7 +24,13 @@ class ChatMessageDto {
   message: string;
 }
 
-@WebSocketGateway({ cors: { origin: process.env.FRONTEND_URL } })
+@WebSocketGateway({ 
+  cors: { 
+    origin: process.env.NODE_ENV === 'production' 
+      ? process.env.FRONTEND_URL 
+      : [process.env.FRONTEND_URL, 'http://localhost:3001']
+  } 
+})
 export class ChatGateway {
   @WebSocketServer()
   server: Server;
