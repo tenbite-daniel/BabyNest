@@ -134,21 +134,12 @@ export async function deleteJournalEntry(id: string) {
 
 
 
-export const getAllUsers = async (currentUserId: string): Promise<{ _id: string; fullName?: string; username?: string }[]> => {
-  const response = await fetch(`/api/users`, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('token')}`, // Adjust based on your auth setup
-    },
-  });
-  if (!response.ok) throw new Error('Failed to fetch users');
-  const users = await response.json();
-  return users.filter(user => user._id !== currentUserId);
+export const getAllUsers = async (currentUserId: string) => {
+  return request(`/user/all`, { method: 'GET' });
 };
 
-export const getPreviousChatPartners = async (userId: string): Promise<string[]> => {
-  const response = await fetch(`/api/chat/previous-partners?userId=${userId}`);
-  if (!response.ok) throw new Error('Failed to fetch previous chat partners');
-  return response.json();
+export const getPreviousChatPartners = async (userId: string) => {
+  return request(`/chat/previous-partners?userId=${userId}`, { method: 'GET' });
 };
 
 

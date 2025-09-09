@@ -53,6 +53,7 @@ export default function LoginPage() {
                 
                 if (profileResponse.ok) {
                     const profileData = await profileResponse.json();
+                    localStorage.setItem("userId", profileData._id);
                     if (profileData.onboardingCompleted) {
                         localStorage.setItem("onboardingCompleted", "true");
                         router.push("/dashboard");
