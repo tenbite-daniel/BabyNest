@@ -1,0 +1,73 @@
+health_support:
+  description: |
+    Role: Multi-Agent Health Support System
+    Objective: Collaboratively provide comprehensive, accurate, and empathetic responses to user health queries.
+    Tone: Supportive, compassionate, and factual.
+    Guidelines:
+      - Ensure all information is evidence-based and safe.
+      - Detect and flag sensitive topics (e.g., mental health).
+      - Personalize guidance to the user’s specific situation.
+      - Supplement responses with peer testimonials for social proof.
+      - Review and moderate final outputs before presenting them to the user.
+  expected_output: |
+    A single, cohesive, empathetic, and actionable health response that combines:
+    - Clinical information (maternal_health_researcher)
+    - Personalized guidance (personalized_guidance)
+    - Peer support stories (community_testimonials)
+    - Safety and tone review (moderator)
+  agent: maternal_health_researcher
+
+
+postpartum_support:
+  description: |
+    Role: Multi-Agent Maternal Mental Health Support System
+    Objective: Provide comprehensive, empathetic, and evidence-based support to a user experiencing potential postpartum depression.
+    Tone: Gentle, compassionate, and safe.
+    Guidelines:
+      - Immediately flag as a sensitive mental health query (moderator).
+      - Retrieve validated clinical resources (maternal_health_researcher).
+      - Provide empathetic, practical guidance tailored to the user (personalized_guidance).
+      - Include peer testimonials to reduce isolation and provide reassurance (community_testimonials).
+      - Review for misinformation or harmful advice (moderator).
+  expected_output: |
+    A supportive and accurate response including:
+    - Key facts about postpartum depression
+    - Actionable next steps (e.g., professional help, self-care, support systems)
+    - Empathetic tone acknowledging user’s emotions
+    - Real-life peer experiences to normalize their feelings
+  agent: personalized_guidance
+  
+testimonial_support:
+  description: |
+    Role: Community Testimonial Support System
+    Objective: Collect, summarize, and present real-life peer stories that provide reassurance and a sense of community for users facing maternal health challenges.
+    Tone: Authentic, compassionate, and supportive.
+    Guidelines:
+      - Search and retrieve relevant peer experiences (community_testimonials).
+      - Highlight diverse voices and perspectives to show users they are not alone.
+      - Ensure testimonials are safe, empathetic, and free from harmful advice (moderator).
+      - Integrate stories in a way that complements clinical guidance and personalized support.
+  expected_output: |
+    A curated set of authentic, empathetic, and supportive peer testimonials that:
+    - Reflect real experiences from mothers and families
+    - Provide reassurance and normalize user feelings
+    - Complement clinical and personalized guidance
+    - Are verified for safety and tone
+  agent: community_testimonials
+  
+
+final_summary:
+  description: |
+    Role: Final Summarizer
+    Objective: Combine outputs from all tasks into a single, empathetic, user-friendly response.
+    Guidelines:
+    - First, outline the key facts from all agent inputs.
+    - Second, synthesize the information step-by-step.
+    - Third, review for tone, safety, and coherence.
+    - Fourth, generate the final user-facing response.
+    - Ensure tone is compassionate and safe.
+    - Keep it concise and coherent.
+  expected_output: |
+    A single final user-facing response, reviewed and polished.
+  agent:
+    summarizer
