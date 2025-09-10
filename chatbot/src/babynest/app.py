@@ -38,6 +38,10 @@ logger = logging.getLogger(file)
 
 limiter = Limiter(key_func=get_remote_address, default_limits=["5/minute"])
 
+os.environ["LANGSMITH_TRACING_V2"] = "true"
+os.environ["LANGSMITH_PROJECT"] = "BabyNest"
+os.environ["LANGSMITH_API_KEY"] = os.getenv("LANGSMITH_API_KEY")
+os.environ["LANGSMITH_ENDPOINT"] = "https://api.smith.langchain.com"
 
 try:
     app = FastAPI(
