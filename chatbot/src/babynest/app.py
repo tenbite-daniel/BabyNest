@@ -19,11 +19,11 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
-from .chat_models import ChatRequest, ChatResponse, SessionEndRequest
-from .components import retriever, AdaptiveConversation, session_memory, ValidationTool, ReasoningTool, GeneralChatTool
-from .db_handler import text_splitter
+from chat_models import ChatRequest, ChatResponse, SessionEndRequest
+from components import retriever, AdaptiveConversation, session_memory, ValidationTool, ReasoningTool, GeneralChatTool
+from db_handler import text_splitter
 from dotenv import load_dotenv
-from .crew import Babynest, get_llm, llm_clients
+from crew import Babynest, get_llm, llm_clients
 
 
 load_dotenv()
@@ -63,6 +63,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
 
 origins = [
+
     "https://baby-nest-five.vercel.app",
     "http://localhost",
     "http://localhost:3000",
@@ -70,6 +71,7 @@ origins = [
     "http://127.0.0.1:3000"
     "http://localhost:8000",
     "http://127.0.0.1:8000"
+
 ]
 
 app.add_middleware(
@@ -189,12 +191,6 @@ async def root():
 @app.post("/api/chat")
 async def chat(request: ChatRequest):
     return await mcp_pipeline(request.user_request, request.session_id)
-
-
-@app.post("/api/external")
-async def external_functions():
-    pass
-
 
 @app.post("/api/n8n_webhook")
 async def handle_n8n_webhook(request: Request):
