@@ -9,6 +9,7 @@ langchain-community
 langchain-groq
 langchain-chroma
 langchain-google-genai
+langchain-cohere
 langchain-text-splitters
 chromadb
 crewai
