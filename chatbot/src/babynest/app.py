@@ -83,7 +83,7 @@ app.add_middleware(
     allow_origins=origins,  
     allow_headers=["*"],
     allow_credentials=True,
-    allow_methods=["POST", "GET"]
+    allow_methods=["*"]
 )
 def get_langchain_llm():
     if os.getenv("GOOGLE_API_KEY"):
