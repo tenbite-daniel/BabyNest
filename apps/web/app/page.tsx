@@ -92,8 +92,8 @@ export default function Home() {
         <p className="max-w-2xl mx-auto text-gray-600">
           We are dedicated to supporting African women throughout their
           pregnancy and early motherhood journey. Our platform provides trusted
-          information, personalized guidance, and a safe community where you can
-          connect with others in similar stages, track your baby’s growth,
+          information, personalized guidance, and a safe community where she can
+          connect with others in similar stages, track her baby’s growth,
           journal milestones, and access professional advice. Our goal is to
           make every mother feel informed, supported, and empowered, no matter
           where she is.
