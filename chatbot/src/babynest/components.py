@@ -28,7 +28,7 @@ try:
     model="embed-english-v3.0",
     cohere_api_key=os.getenv("COHERE_API_KEY")
 )
-    logger.info("Successfully initialized Generative AI embeddings!")
+    logger.info("Successfully initialized Generative AI embeddings.")
 except Exception as e:
     logger.error("Encountered an error in loading the embedding model!")
 
