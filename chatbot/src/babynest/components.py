@@ -3,7 +3,6 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_cohere import CohereEmbeddings
 from langchain_chroma import Chroma
 from langchain_groq import ChatGroq
-from typing import List, Tuple, Dict
 import logging
 import os
 from pathlib import Path
@@ -30,6 +29,7 @@ try:
 )
     logger.info("Successfully initialized Generative AI embeddings.")
 except Exception as e:
+    embeddings=None
     logger.error("Encountered an error in loading the embedding model!")
 
 try:
@@ -41,27 +41,50 @@ try:
 except Exception as e:
     logger.exception("Failed to load vector db")
 
-class ContentRetriever:
+class ContentRetriever():
     def get_documents(self, query: str) -> str:
-        docs = stored_data.invoke(query)
-        return "\n\n".join(doc.page_content for doc in docs)
+        try:
+            docs = stored_data.similarity_search(query, k=4)
+            return "\n\n".join(doc.page_content for doc in docs)
+        except Exception as e:
+            logger.exception("Failed to retrieve documents from Chroma.")
+            return ""
     
     def web_search_tool(self,query):
         pass
 
-class AIModels:
-    async def router(self,query):
+retriever = ContentRetriever()
+class AIModels():
+    async def router_model(self):
         try:
             logger.info("Connecting to the router LLM...")
             router_llm = ChatGroq(
                 model=os.getenv("ROUTER_MODEL"),
                 api_key=os.getenv("GROQ_API_KEY"),
-                temperature="0.7"
+                temperature=0.7
             )
             logger.info("Successfully connected to router llm")
+            return  router_llm
         except Exception as e:
             logger.exception("Failed to connect to the routing llm")
             return "Could not set up routing AI model"
+        
+    async def general_model(self):
+        try:
+            logger.info("Connecting to general chat LLM")
+            general_llm = ChatGroq(
+                model=os.getenv("GENERAL_MODEL"),
+                api_key=os.getenv("GROQ_API_KEY"),
+                temperature=0.7
+            )
+            return general_llm
+        except Exception as e:
+            logger.critical("Failed to connect to the general chat LLM")
+            return "Coild not connect to the general chat LLM"
+models = AIModels()
+
+class PurposeModels():
+    async def router(self,query):
         router_template = ChatPromptTemplate.from_template("""
         You are **BabyNest's Intelligent Routing System**.  
         Your goal is to deeply analyze the user's message and decide the correct processing route.
@@ -92,8 +115,10 @@ class AIModels:
         ### User Query:
         {{input}}
         """)
-        router_chain = router_template | router_llm | StrOutputParser()
+        
         try:
+            router_llm = await models.router_model()
+            router_chain = router_template | router_llm | StrOutputParser()
             route = await router_chain.ainvoke({"input": query})
             logger.info(f"Successfully determined route: {route}")
             return route
@@ -101,4 +126,59 @@ class AIModels:
             logger.exception("Failed to authoritatively determine the route. Proceeding with langchain")
             return "langchain"
         
+    async def general_chat(self, query):
+        general_chat_prompt = ChatPromptTemplate.from_template("""
+            You are the **General Chat Assistant for BabyNest**, an organization dedicated to supporting maternal health, baby care, and family wellness.
+
+            Your personality blends **warmth, intelligence, and professionalism**.  
+            You communicate like a thoughtful human — brief, natural, and emotionally aware.
+
+            ---
+
+            ### Your Core Purpose:
+            - Answer questions related to **BabyNest** — who we are, what we do, our services, and general maternal or baby-care information.  
+            - Provide **accurate, caring, and empathetic** responses.  
+            - For **unclear or vague queries**, ask smart follow-up questions to clarify.  
+            - If a query is **off-topic**, you may answer briefly but **politely remind** the user that your main focus is BabyNest.  
+            - Be subtle and vary your phrasing so it feels human and not scripted (warn first time, hint gently later, then remind more directly if repeated).
+
+            ---
+
+            ### Style Guidelines:
+            - **Tone:** Warm, caring, yet professional.  
+            - **Length:** 1–3 short sentences max.  
+            - **Format:** Use simple structure; emojis are okay when natural (e.g., 👶❤️).  
+            - **No robotic repetition** — respond like a human who remembers context.  
+            - Show gentle empathy when users mention emotions, health, or stress.
+
+            ---
+
+            ### Behavioral Rules:
+            1. If the question is **about BabyNest** → Answer confidently and naturally.  
+            2. If it’s **off-topic** → Give a friendly brief answer, then gently mention your main focus.  
+            3. If **ambiguous** → Ask for clarification in a natural, conversational way.  
+            4. If **medical** but within scope → Give safe, informative responses and remind users to consult a professional for diagnosis or treatment.  
+            5. Keep every message concise but genuinely helpful.
+
+            ---
+
+            Context: {context}  
+            User: {user_query}  
+            BabyNest Assistant:
+            """)
+        
+        try:
+            general_llm = await models.general_model()
+            general_chain = general_chat_prompt | general_llm |StrOutputParser() 
+            output = await general_chain.ainvoke({"context":retriever.get_documents(query=query),
+             "user_query": query })
+            logger.info("General chat: Successful")
+            if output:
+                return output
+            else:
+                return "Blank response"
+        except Exception as e:
+            logger.exception("General chat: Failed")
+            return "General chat failed to return an answer"
+
     
