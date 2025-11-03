@@ -76,9 +76,9 @@ async def root():
 
 
 @app.post("/api/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest):
+async def chat(chat_request: ChatRequest):
     try:
-        route = await assistant.router(query=request.user_request)
+        route = await assistant.router(query=chat_request.user_request)
         logger.info("Successfully determined route")
     except Exception as e:
         logger.exception(f"Failed to determine route: {e}")
@@ -86,7 +86,7 @@ async def chat(request: ChatRequest):
     if route == "langchain":
         logger.info("Passing conversation to langchain")
         try:
-            output = await assistant.general_chat(query=request.user_request)
+            output = await assistant.general_chat(query=chat_request.user_request)
             logger.info("Chatbot returned an answer!")
             return ChatResponse(output=output)
         except Exception as e:

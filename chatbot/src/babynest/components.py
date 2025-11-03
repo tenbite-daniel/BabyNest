@@ -57,9 +57,12 @@ retriever = ContentRetriever()
 class AIModels():
     async def router_model(self):
         try:
+            load_dotenv()
             logger.info("Connecting to the router LLM...")
+            load_dotenv()
             router_llm = ChatGroq(
-                model=os.getenv("ROUTER_MODEL"),
+                # model=os.getenv("ROUTER_MODEL"),
+                model = "llama-3.3-70b-versatile",
                 api_key=os.getenv("GROQ_API_KEY"),
                 temperature=0.7
             )
@@ -113,7 +116,7 @@ class PurposeModels():
         `langchain` or `crewai`
 
         ### User Query:
-        {{input}}
+        {input}
         """)
         
         try:
@@ -173,10 +176,7 @@ class PurposeModels():
             output = await general_chain.ainvoke({"context":retriever.get_documents(query=query),
              "user_query": query })
             logger.info("General chat: Successful")
-            if output:
-                return output
-            else:
-                return "Blank response"
+            return output
         except Exception as e:
             logger.exception("General chat: Failed")
             return "General chat failed to return an answer"
