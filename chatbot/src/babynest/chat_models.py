@@ -5,7 +5,7 @@ class ChatRequest(BaseModel):
     session_id: str | None = Field(None, min_length=1, max_length=50)
 
 class ChatResponse(BaseModel):
-    response: str
+    output: str
 
 class SessionEndRequest(BaseModel):
     session_id: str = Field(..., min_length=1, max_length=50)
