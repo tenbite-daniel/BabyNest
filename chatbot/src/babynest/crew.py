@@ -5,13 +5,14 @@ from crewai.tools import tool
 from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
-from .components import logger, ContentRetriever
+from .components import logger, retriever
 import os
 
 load_dotenv()
 
+
 @tool
-def internet_research_tool(query: str) -> str:
+async def internet_research_tool(query: str) -> str:
     """
     Searches the internet for information based on a user's query.
     The 'query' must be a simple, single string (e.g., 'postpartum depression stories').
@@ -19,8 +20,7 @@ def internet_research_tool(query: str) -> str:
     """
     try:
         logger.info("Looking for internet information regarding your query")
-        search_tool_instance = DuckDuckGoSearchRun()
-        result = search_tool_instance.run(query)
+        result = await retriever.web_search_tool(query=query)
         logger.info("Web search tool successfully retrieved search results")
         return result
     except Exception as e:
@@ -29,31 +29,28 @@ def internet_research_tool(query: str) -> str:
 
 
 @tool
-def rag_tool(query: str) -> str:
+async def rag_tool(query: str) -> str:
     """
     Retrieves relevant documents from the vector database based on a user's query.
     The 'query' must be a simple, single string (e.g., 'community testimonials').
     Use this tool to get information from the internal knowledge base.
     """
     try:
-        result = stored_data.invoke(query)
+        result = await retriever.get_documents(query=query)
         logger.info("Successfully searched the vector db")
         return result if result else "No relevant documents found in the db"
     except Exception as e:
         logger.exception("Failed to search the vector db")
         return "No relevant documents found"
 
-llm_clients = {
-    "groq": ChatGroq(model="groq/llama-3.3-70b-versatile", temperature=0.7, api_key=os.getenv("GROQ_API_KEY")),
-    "gemini": ChatGoogleGenerativeAI(model="gemini/gemini-1.5-pro", temperature=0.7, google_api_key=os.getenv("GOOGLE_API_KEY"))  
-}
    
 def get_llm():
     try:
         return LLM(
-            model="gemini/gemini-1.5-flash",
+            model="gemini/gemini-2.5-flash",
             api_key=os.getenv("GOOGLE_API_KEY"),
-            temperature=0.5
+            temperature=0.7,
+            stream=True
         )
     except Exception as e:
         logger.error(f"Failed to connect to Gemini... : {e}")
@@ -82,65 +79,48 @@ class Babynest:
 
     # New Agents
     @agent
-    def planner(self) -> Agent:
+    def main_agent(self) -> Agent:
         return Agent(
-            config=self.agents_config.get('planner', {}),
+            config=self.agents_config.get('main_agent', {}),
             verbose=True,
             llm=get_llm(),
         )
 
-    @agent
-    def refiner(self) -> Agent:
-        return Agent(
-            config=self.agents_config.get('refiner', {}),
-            verbose=True,
-            llm=get_llm(),
-            tools=[] # No tools needed for this agent
-        )
-
-    # Existing Agents
     @agent
     def maternal_health_researcher(self) -> Agent:
         return Agent(
             config=self.agents_config.get('maternal_health_researcher', {}),
+            verbose=True,
+            llm=get_llm(),
+            tools=[rag_tool, internet_research_tool]
+        )
+
+    @agent
+    def community_testimonials_researcher(self) -> Agent:
+        return Agent(
+            config=self.agents_config.get('community_testimonials_researcher', {}),
             verbose=True,
             tools=[internet_research_tool, rag_tool],
             llm=get_llm()
         )
 
     @agent
-    def personalized_guidance(self) -> Agent:
+    def personalized_health_communicator(self) -> Agent:
         return Agent(
-            config=self.agents_config.get('personalized_guidance', {}),
+            config=self.agents_config.get('personalized_health_communicator', {}),
             verbose=True,
             llm=get_llm(),
-            tools=[rag_tool, internet_research_tool]
+            tools=[]
         )
 
     @agent
-    def community_testimonials(self) -> Agent:
+    def final_response_synthesizer(self) -> Agent:
         return Agent(
-            config=self.agents_config.get('community_testimonials', {}),
-            verbose=True,
-            llm=get_llm(),
-            tools=[rag_tool, internet_research_tool]
-        )
-
-    @agent
-    def summarizer(self) -> Agent:
-        return Agent(
-            config=self.agents_config.get('summarizer', {}),
+            config=self.agents_config.get('final_response_synthesizer', {}),
             verbose=True,
             llm=get_llm()
         )
 
-    @agent
-    def moderator(self) -> Agent:
-        return Agent(
-            config=self.agents_config.get('moderator', {}),
-            verbose=True,
-            llm=get_llm()
-        )
 
     # New Sequential Tasks
     @task

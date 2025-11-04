@@ -64,11 +64,11 @@ class ContentRetriever():
         formatted_results = []
         for x in results["results"]:
             answer = f'Title:\n {x["title"]}\n\nContent: {x["content"]}'
-            logger.info("Successfully formatted Tavily responses.")
             formatted_results.append(answer)
+        logger.info("Successfully formatted Tavily responses.")
+        return formatted_results
 
 retriever = ContentRetriever()
-
 class AIModels():
     async def router_model(self):
         try:
@@ -76,8 +76,8 @@ class AIModels():
             logger.info("Connecting to the router LLM...")
             load_dotenv()
             router_llm = ChatGroq(
-                # model=os.getenv("ROUTER_MODEL"),
-                model = "llama-3.3-70b-versatile",
+                model=os.getenv("ROUTER_MODEL"),
+                # model = "llama-3.3-70b-versatile",
                 api_key=os.getenv("GROQ_API_KEY"),
                 temperature=0.7
             )
