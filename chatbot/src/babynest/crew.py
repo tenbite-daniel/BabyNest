@@ -3,12 +3,9 @@ from crewai.project import CrewBase, agent, crew, task
 from crewai.agents.agent_builder.base_agent import BaseAgent
 from crewai.tools import tool
 from langchain_community.tools import DuckDuckGoSearchRun
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_groq import ChatGroq
 from langchain_google_genai import ChatGoogleGenerativeAI
-from typing import List
 from dotenv import load_dotenv
-from db_handler import logger, stored_data
+from .components import logger, ContentRetriever
 import os
 
 load_dotenv()

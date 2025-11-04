@@ -3,6 +3,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_cohere import CohereEmbeddings
 from langchain_chroma import Chroma
 from langchain_groq import ChatGroq
+from tavily import TavilyClient
 import logging
 import os
 from pathlib import Path
@@ -41,8 +42,15 @@ try:
 except Exception as e:
     logger.exception("Failed to load vector db")
 
+try:
+    logger.info("Setting up Tavily for web search.")
+    client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
+    logger.info("Successfully set up Tavily client")
+except Exception as e:
+    logger.exception("Failed to set up Tavily client.")
+
 class ContentRetriever():
-    def get_documents(self, query: str) -> str:
+    async def get_documents(self, query: str) -> str:
         try:
             docs = stored_data.similarity_search(query, k=4)
             return "\n\n".join(doc.page_content for doc in docs)
@@ -50,10 +58,17 @@ class ContentRetriever():
             logger.exception("Failed to retrieve documents from Chroma.")
             return ""
     
-    def web_search_tool(self,query):
-        pass
+    async def web_search_tool(self,query):
+        results = client.search(query=query, max_results=7)
+        logger.info("Tavily query successfull.")
+        formatted_results = []
+        for x in results["results"]:
+            answer = f'Title:\n {x["title"]}\n\nContent: {x["content"]}'
+            logger.info("Successfully formatted Tavily responses.")
+            formatted_results.append(answer)
 
 retriever = ContentRetriever()
+
 class AIModels():
     async def router_model(self):
         try:
