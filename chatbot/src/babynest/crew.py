@@ -22,7 +22,7 @@ async def internet_research_tool(query: str) -> str:
         logger.info("Looking for internet information regarding your query")
         result = await retriever.web_search_tool(query=query)
         logger.info("Web search tool successfully retrieved search results")
-        return result
+        return "\n\n".join(result)
     except Exception as e:
         logger.exception("Failed to search the internet for your query")
         return f"No information collected regarding {query}"
@@ -77,13 +77,13 @@ class Babynest:
             logger.warning("Failed to load config files: %s", e)
             self.agents_config, self.tasks_config = {}, {}
 
-    # New Agents
     @agent
     def main_agent(self) -> Agent:
         return Agent(
             config=self.agents_config.get('main_agent', {}),
             verbose=True,
             llm=get_llm(),
+            max_iter=2
         )
 
     @agent
@@ -92,7 +92,8 @@ class Babynest:
             config=self.agents_config.get('maternal_health_researcher', {}),
             verbose=True,
             llm=get_llm(),
-            tools=[rag_tool, internet_research_tool]
+            tools=[rag_tool, internet_research_tool],
+            max_iter=3
         )
 
     @agent
@@ -101,7 +102,8 @@ class Babynest:
             config=self.agents_config.get('community_testimonials_researcher', {}),
             verbose=True,
             tools=[internet_research_tool, rag_tool],
-            llm=get_llm()
+            llm=get_llm(),
+            max_iter=2
         )
 
     @agent
@@ -110,7 +112,8 @@ class Babynest:
             config=self.agents_config.get('personalized_health_communicator', {}),
             verbose=True,
             llm=get_llm(),
-            tools=[]
+            tools=[],
+            max_iter=3
         )
 
     @agent
@@ -118,63 +121,45 @@ class Babynest:
         return Agent(
             config=self.agents_config.get('final_response_synthesizer', {}),
             verbose=True,
-            llm=get_llm()
-        )
-
-
-    # New Sequential Tasks
-    @task
-    def plan_conversation(self) -> Task:
-        return Task(
-            config=self.tasks_config.get('plan_conversation', {}),
-            agent=self.planner() # Ensure the agent is an instance
+            llm=get_llm(),
+            max_iter=2
         )
 
     @task
-    def research_and_draft(self) -> Task:
+    def routing_task(self) -> Task:
         return Task(
-            config=self.tasks_config.get('research_and_draft', {}),
-            agent=self.maternal_health_researcher()
+            config=self.tasks_config.get('main_task', {}),
+            agent=self.main_agent() 
+        )
+
+    @task
+    def maternal_health_task(self) -> Task:
+        return Task(
+            config=self.tasks_config.get('maternal_health_researcher_task', {}),
+            agent=self.maternal_health_researcher() # This needs a user_query variable
         )
     
     @task
-    def refine_health_info(self) -> Task:
+    def personalized_health_communicator_task(self) -> Task:
         return Task(
-            config=self.tasks_config.get('refine_health_info', {}),
-            agent=self.refiner(),
-            context=[self.research_and_draft()]
+            config=self.tasks_config.get('personalized_health_communicator_task', {}),
+            agent=self.personalized_health_communicator(),
+            context=[self.routing_task()]
         )
 
     @task
-    def get_testimonials(self) -> Task:
+    def community_testimonials(self) -> Task:
         return Task(
-            config=self.tasks_config.get('get_testimonials', {}),
-            agent=self.community_testimonials(),
-            context=[self.refine_health_info()]
+            config=self.tasks_config.get('community_testimonials_task', {}),
+            agent=self.community_testimonials_researcher(),
         )
 
     @task
-    def synthesize_and_personalize(self) -> Task:
+    def final_response_synthesizer_task(self) -> Task:
         return Task(
-            config=self.tasks_config.get('synthesize_and_personalize', {}),
-            agent=self.personalized_guidance(),
-            context=[self.refine_health_info(), self.get_testimonials()]
-        )
-
-    @task
-    def moderation_and_finalization(self) -> Task:
-        return Task(
-            config=self.tasks_config.get('moderation_and_finalization', {}),
-            agent=self.moderator(),
-            context=[self.synthesize_and_personalize()]
-        )
-
-    @task
-    def final_summarization(self) -> Task:
-        return Task(
-            config=self.tasks_config.get('final_summarization', {}),
-            agent=self.summarizer(),
-            context=[self.moderation_and_finalization()]
+            config=self.tasks_config.get('final_response_synthesizer_task', {}),
+            agent=self.final_response_synthesizer(),
+            context=[self.personalized_health_communicator_task()]
         )
 
     @crew
@@ -182,22 +167,18 @@ class Babynest:
         """Creates the Babynest crew with the new sequential process."""
         return Crew(
             agents=[
-                self.planner(),
+                self.main_agent(),
                 self.maternal_health_researcher(),
-                self.refiner(),
-                self.community_testimonials(),
-                self.personalized_guidance(),
-                self.moderator(),
-                self.summarizer()
+                self.community_testimonials_researcher(),
+                self.personalized_health_communicator(),
+                self.final_response_synthesizer()
             ],
             tasks=[
-                self.plan_conversation(),
-                self.research_and_draft(),
-                self.refine_health_info(),
-                self.get_testimonials(),
-                self.synthesize_and_personalize(),
-                self.moderation_and_finalization(),
-                self.final_summarization()
+                self.routing_task(),
+                # self.maternal_health_task(),
+                self.personalized_health_communicator_task(),
+                # self.community_testimonials(),
+                self.final_response_synthesizer_task(),
             ],
             process=Process.sequential,
             verbose=True,

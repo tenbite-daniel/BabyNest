@@ -93,7 +93,8 @@ class AIModels():
             general_llm = ChatGroq(
                 model=os.getenv("GENERAL_MODEL"),
                 api_key=os.getenv("GROQ_API_KEY"),
-                temperature=0.7
+                temperature=0.7,
+                streaming=True
             )
             return general_llm
         except Exception as e:
@@ -188,7 +189,8 @@ class PurposeModels():
         try:
             general_llm = await models.general_model()
             general_chain = general_chat_prompt | general_llm |StrOutputParser() 
-            output = await general_chain.ainvoke({"context":retriever.get_documents(query=query),
+            document_context = await retriever.get_documents(query=query)
+            output = await general_chain.ainvoke({"context":document_context,
              "user_query": query })
             logger.info("General chat: Successful")
             return output

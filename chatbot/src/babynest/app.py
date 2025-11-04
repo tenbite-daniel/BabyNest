@@ -7,6 +7,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from .chat_models import ChatRequest, ChatResponse
 from .components import PurposeModels
+from .crew import Babynest
 from dotenv import load_dotenv
 import logging
 import httpx
@@ -95,9 +96,11 @@ async def chat(chat_request: ChatRequest):
             return ChatResponse(output=output)
     elif route == "crewai":
         try:
-            output = "Basic structure for crewai"
-            logger.info("Crew executed successfully")
-            return ChatResponse(output=output)
+            logger.info("Routing conversation to Crewai")
+            crew_instance = Babynest().crew()
+            response = crew_instance.kickoff(inputs={"user_query":chat_request.user_request})
+            logger.info("CrewAI executed successfully!")
+            return ChatResponse(output=response)
         except Exception as e:
             output = "CrewAI failed"
             logger.exception("Crew Failed")
