@@ -1,40 +1,99 @@
-plan_conversation:
-  description: "Analyze the user's request. If it's a broad or vague query, formulate specific, leading questions to gather more information. If the query is direct (e.g., 'how to breastfeed'), create a detailed plan for the research and response generation."
-  expected_output: "Either a set of clarifying questions to ask the user, or a detailed, step-by-step plan for the subsequent tasks."
-  agent: planner
+main_task:
+  description: >
+    **Role**: BabyNest Main Orchestration Agent
+      **Objective**: Analyze the user's raw query ({user_query}) related to maternal/infant health to determine the core information need (Factual/Researcher, Experiential/Community, or mixed).
+      It is the **sole decision-maker** for routing to the specialist gathering agents.
+      User Query: {user_query}
+  expected_output: >
+    A structured JSON response detailing:
+    ```json
+    {
+      "detected_intent": "community_testimonials" | "research",
+      "required_agents": ["maternal_health_researcher", "personalized_health_communicator", "community_testimonials_researcher"],
+      "final_compiled_output": "A unified response combining outputs..."
+    }
+    ```
+  inputs:
+    - user_query
+  config:
+    enable_context_check: true
+    allow_multi_agent_calls: true
+    fallback_strategy: "Ask for clarification if user input is insufficient"
+    output_format: "Structured JSON + readable summary"
+    max_concurrent_agents: 3
 
-research_and_draft:
-  description: "Execute the research plan provided by the 'plan_conversation' task. The Maternal Health Researcher will find clinical information. This task should be initiated only after the plan is ready."
-  expected_output: "Raw, unrefined medical information and data related to the user's query."
+  agent: main_agent
+  run_mode: orchestration
+
+
+maternal_health_researcher_task:
+  description: >
+    **Objective**: Retrieve, synthesize, and validate current, evidence-based medical and public health data relevant to the user's query: ({user_query}).
+      **Behavior**: Use knowledge and web_search_tool (if necessary) to consult authoritative sources (WHO, CDC, ACOG) for facts, guidelines, and medical risks/benefits.
+      Output a structured, technical report.
+    **Guidelines:**  
+      - Focus on verified and high-quality  information relevant to the user’s input.  
+  expected_output: >
+      A concise, structured research report (3-5 paragraphs) containing only validated medical facts, health guidelines, and clinical insights relevant to the user's query.
+  inputs:
+      - user_query
+  run_mode: independent
   agent: maternal_health_researcher
-  context: [plan_conversation]
 
-refine_health_info:
-  description: "Take the raw research data from the 'research_and_draft' task and transform it into an easy-to-understand, empathetic, and actionable format. This involves simplifying complex medical terms and structuring the information for clarity."
-  expected_output: "A refined, user-friendly summary of the medical information."
-  agent: refiner
-  context: [research_and_draft]
+community_testimonials_task:
+  agent: community_testimonials_researcher
+  description: >
+   **Role**: Community Testimonials Researcher Agent
+    **Objective**: Gather and analyze real stories, subjective discussions, and emotional truths from mothers and caregivers across online communities relevant to the user's query: ({user_query}).
+    **Behavior**: Identify common emotional patterns, subjective challenges, and non-medical practical tips shared by mothers, ensuring sensitivity.
+    Output a summary of lived experiences.
 
-get_testimonials:
-  description: "Based on the user's query and the refined information, search for relevant community testimonials. This task is optional but should be triggered if the user's query implies a need for peer support (e.g., 'I feel alone')."
-  expected_output: "A curated summary of real-life stories and peer experiences."
-  agent: community_testimonials
-  context: [refine_health_info]
+  expected_output: >
+      A summary (3-5 emotional points/paragraphs) of authentic, subjective community experiences, common feelings, and non-medical tips related to the user's query.
+  inputs:
+    - user_query
 
-synthesize_and_personalize:
-  description: "Take the refined health information and, if available, the community testimonials, and combine them into a single, personalized, and empathetic guidance document. This agent adds a human touch to the factual data."
-  expected_output: "A cohesive, personalized, and empathetic guidance message."
-  agent: personalized_guidance
-  context: [refine_health_info, get_testimonials]
+  config:
+    include_relevance_score: true
+    ranking_criteria: "Relevance to user's query"
+    allow_uncertain_entries: false
 
-moderation_and_finalization:
-  description: "Review all the generated outputs (refined health info, testimonials, and personalized guidance) for safety, tone, and accuracy. The moderator will flag any potential issues."
-  expected_output: "A final, approved version of the combined content, ready for summarization."
-  agent: moderator
-  context: [synthesize_and_personalize]
+  run_mode: independent
 
-final_summarization:
-  description: "Take the moderated and approved content and synthesize it into the final, concise, and straight-to-the-point user-facing response. The response should be as brief as possible while remaining helpful."
-  expected_output: "A final, concise, and coherent user-facing response."
-  agent: summarizer
-  context: [moderation_and_finalization]
+personalized_health_communicator_task:
+  agent: personalized_health_communicator
+  description: >
+    **Role**: Personalized Maternal Health Communicator Agent
+      **Objective**: Transform ALL raw information provided in the context (from the Researcher and/or Community agents) into a single, personalized, empathetic, and actionable guidance message.
+      **Behavior**: Blend factual accuracy with emotional warmth. The tone must be clear, trustworthy, and compassionate. Always include a reminder to consult a professional for diagnosis.
+
+  expected_output: >
+    A single, supportive, and personalized response  that harmoniously blends factual accuracy and emotional empathy, directly answering the user's query.
+  
+  agent: personalized_health_communicator
+  run_mode: refinement
+
+
+final_response_synthesizer_task:
+  description: >
+      **Role**: Final Response Synthesizer and Moderator Agent
+      **Objective**: Review the personalized draft from the Communicator, ensuring the message is medically safe, accurate, and emotionally balanced. Polish the text for grammar, flow, and conciseness.
+      **Behavior**: Act as the final quality gatekeeper. Ensure the tone is polished, respectful, and realistic. Output the response in a clean, Markdown-formatted string ready for chat UI display.
+      
+      Draft for Review: {context}
+
+  expected_output: >
+      A final, polished, safe, and concise Markdown-formatted response string (max 1200 characters) ready for immediate display to the user.
+  inputs:
+    - user_query
+
+  config:
+    ensure_grammar_check: true
+    remove_duplicates: true
+    unify_tone: true
+    max_length: 1200
+    fallback_strategy: "Return raw output if polishing fails"
+    populate_only_available_sections: true  
+    generate_display_key: true
+  agent: final_response_synthesizer
+  run_mode: refinement
