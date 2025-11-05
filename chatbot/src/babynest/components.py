@@ -69,6 +69,9 @@ class ContentRetriever():
         return formatted_results
 
 retriever = ContentRetriever()
+
+class Memory():
+    pass
 class AIModels():
     async def router_model(self):
         try:
