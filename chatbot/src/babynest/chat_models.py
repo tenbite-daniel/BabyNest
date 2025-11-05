@@ -7,5 +7,8 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     output: str
 
+class CrewResponse(BaseModel):
+    output: object
+
 class SessionEndRequest(BaseModel):
     session_id: str = Field(..., min_length=1, max_length=50)

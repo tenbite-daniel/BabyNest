@@ -5,10 +5,11 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
-from .chat_models import ChatRequest, ChatResponse
+from .chat_models import ChatRequest, ChatResponse, CrewResponse
 from .components import PurposeModels
 from .crew import Babynest
 from dotenv import load_dotenv
+from typing import Union
 import logging
 import httpx
 import os
@@ -76,7 +77,7 @@ async def root():
     return {"message": "Backend running. Visit /docs"}
 
 
-@app.post("/api/chat", response_model=ChatResponse)
+@app.post("/api/chat", response_model=Union[ChatResponse, CrewResponse])
 async def chat(chat_request: ChatRequest):
     try:
         route = await assistant.router(query=chat_request.user_request)
@@ -100,7 +101,7 @@ async def chat(chat_request: ChatRequest):
             crew_instance = Babynest().crew()
             response = crew_instance.kickoff(inputs={"user_query":chat_request.user_request})
             logger.info("CrewAI executed successfully!")
-            return ChatResponse(output=response)
+            return CrewResponse(output=response.raw)
         except Exception as e:
             output = "CrewAI failed"
             logger.exception("Crew Failed")

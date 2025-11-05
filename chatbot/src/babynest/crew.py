@@ -7,12 +7,13 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
 from .components import logger, retriever
 import os
+import asyncio
 
 load_dotenv()
 
 
 @tool
-async def internet_research_tool(query: str) -> str:
+def internet_research_tool(query: str) -> str:
     """
     Searches the internet for information based on a user's query.
     The 'query' must be a simple, single string (e.g., 'postpartum depression stories').
@@ -20,7 +21,7 @@ async def internet_research_tool(query: str) -> str:
     """
     try:
         logger.info("Looking for internet information regarding your query")
-        result = await retriever.web_search_tool(query=query)
+        result = asyncio.run(retriever.web_search_tool(query=query))
         logger.info("Web search tool successfully retrieved search results")
         return "\n\n".join(result)
     except Exception as e:
@@ -29,14 +30,14 @@ async def internet_research_tool(query: str) -> str:
 
 
 @tool
-async def rag_tool(query: str) -> str:
+def rag_tool(query: str) -> str:
     """
     Retrieves relevant documents from the vector database based on a user's query.
     The 'query' must be a simple, single string (e.g., 'community testimonials').
     Use this tool to get information from the internal knowledge base.
     """
     try:
-        result = await retriever.get_documents(query=query)
+        result = asyncio.run(retriever.get_documents(query=query))
         logger.info("Successfully searched the vector db")
         return result if result else "No relevant documents found in the db"
     except Exception as e:
@@ -46,6 +47,7 @@ async def rag_tool(query: str) -> str:
    
 def get_llm():
     try:
+        load_dotenv()
         return LLM(
             model="gemini/gemini-2.5-flash",
             api_key=os.getenv("GOOGLE_API_KEY"),
