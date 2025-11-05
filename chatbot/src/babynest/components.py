@@ -66,14 +66,14 @@ except Exception as e:
 class ContentRetriever():
     async def get_documents(self, query: str) -> str:
         try:
-            docs = stored_data.similarity_search(query, k=4)
+            docs = await asyncio.to_thread(stored_data.similarity_search, query, k=4)
             return "\n\n".join(doc.page_content for doc in docs)
         except Exception as e:
             logger.exception("Failed to retrieve documents from Chroma.")
             return ""
     
     async def web_search_tool(self,query):
-        results = client.search(query=query, max_results=7)
+        results = await asyncio.to_thread(client.search, query=query, max_results=7)
         logger.info("Tavily query successfull.")
         formatted_results = []
         for x in results["results"]:
