@@ -13,7 +13,7 @@ load_dotenv()
 
 
 @tool
-def internet_research_tool(query: str) -> str:
+async def internet_research_tool(query: str) -> str:
     """
     Searches the internet for information based on a user's query.
     The 'query' must be a simple, single string (e.g., 'postpartum depression stories').
@@ -21,7 +21,7 @@ def internet_research_tool(query: str) -> str:
     """
     try:
         logger.info("Looking for internet information regarding your query")
-        result = asyncio.run(retriever.web_search_tool(query=query))
+        result = await retriever.web_search_tool(query=query)
         logger.info("Web search tool successfully retrieved search results")
         return "\n\n".join(result)
     except Exception as e:
@@ -30,14 +30,14 @@ def internet_research_tool(query: str) -> str:
 
 
 @tool
-def rag_tool(query: str) -> str:
+async def rag_tool(query: str) -> str:
     """
     Retrieves relevant documents from the vector database based on a user's query.
     The 'query' must be a simple, single string (e.g., 'community testimonials').
     Use this tool to get information from the internal knowledge base.
     """
     try:
-        result = asyncio.run(retriever.get_documents(query=query))
+        result = await retriever.get_documents(query=query)
         logger.info("Successfully searched the vector db")
         return result if result else "No relevant documents found in the db"
     except Exception as e:

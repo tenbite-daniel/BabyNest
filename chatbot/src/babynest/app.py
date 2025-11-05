@@ -88,7 +88,7 @@ async def chat(chat_request: ChatRequest):
     if route == "langchain":
         logger.info("Passing conversation to langchain")
         try:
-            output = await assistant.general_chat(query=chat_request.user_request)
+            output = await assistant.general_chat(query=chat_request.user_request,session_id=chat_request.session_id)
             logger.info("Chatbot returned an answer!")
             return ChatResponse(output=output)
         except Exception as e:

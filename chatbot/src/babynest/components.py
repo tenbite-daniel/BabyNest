@@ -5,9 +5,14 @@ from langchain_chroma import Chroma
 from langchain_groq import ChatGroq
 from tavily import TavilyClient
 import logging
+import asyncio
+import json
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from upstash_redis import Redis
+from langchain.schema import BaseMessage, HumanMessage, AIMessage
+from langchain_core.chat_history import BaseChatMessageHistory
 
 load_dotenv()
 
@@ -49,6 +54,15 @@ try:
 except Exception as e:
     logger.exception("Failed to set up Tavily client.")
 
+try:
+    logger.info("Setting up Redis")
+    redis = Redis(url=os.getenv("UPSTASH_REDIS_REST_URL"), token=os.getenv("UPSTASH_REDIS_REST_TOKEN"))
+    redis.set("redis_check","online", ex=60)
+    logger.info("Successful")
+except Exception as e:
+    logger.exception(f"Failed to set up Redis: {e}")
+
+
 class ContentRetriever():
     async def get_documents(self, query: str) -> str:
         try:
@@ -71,7 +85,71 @@ class ContentRetriever():
 retriever = ContentRetriever()
 
 class Memory():
-    pass
+    def __init__(self, session_id: str):
+        self.session_id = session_id
+
+    def _get_messages_sync(self) -> list[BaseMessage]:
+        """Fetches and deserializes messages from Redis using the session_id key."""
+        raw = redis.get(self.session_id)
+        if not raw:
+            return []
+        try:
+            messages_data = json.loads(raw)
+            logger.info(f"This is the raw_output as stored in the db: {raw}")
+            messages = []
+            for m in messages_data:
+                if m["type"] == "human":
+                    messages.append(HumanMessage(content=m["content"]))
+                else:
+                    messages.append(AIMessage(content=m["content"]))
+            return messages
+        except Exception as e:
+            logger.warning(f"Failed to parse Redis history for session {self.session_id}: {e}")
+            return []
+        
+    def _save_messages_sync(self, messages: list[BaseMessage]):
+        """Serializes and saves the complete list of messages to Redis with expiry."""
+        try:
+            serialized = []
+            for m in messages:
+                # Serialize BaseMessage objects into simple dictionaries
+                msg_type = "human" if isinstance(m, HumanMessage) else "ai"
+                serialized.append({"type": msg_type, "content": m.content }) 
+            
+            # Save the JSON string to Redis, setting the key to expire
+            redis.set(self.session_id, json.dumps(serialized))
+        except Exception as e:
+            logger.error(f"Failed to save Redis history for session {self.session_id}: {e}")
+
+    @property
+    def messages(self) -> list[BaseMessage]: 
+        """Synchronous getter for conversation history (required by LangChain interface)."""
+        return self._get_messages_sync()
+    
+    def add_messages(self, messages: list[BaseMessage]) -> None:
+        """Appends new messages and saves the entire history synchronously."""
+        current_messages = self._get_messages_sync()
+        current_messages.extend(messages)
+        self._save_messages_sync(current_messages)\
+        
+    def clear(self) -> None:
+        """Clears all messages synchronously by deleting the key."""
+        redis.delete(self.session_id)
+
+    async def aget_messages(self) -> list[BaseMessage]:
+        """Loads history asynchronously using a thread pool to avoid blocking the event loop."""
+        return await asyncio.to_thread(self._get_messages_sync)
+    
+    async def aadd_messages(self, messages: list[BaseMessage]) -> None:
+        """Adds and saves messages asynchronously."""
+        current_messages = await self.aget_messages()
+        current_messages.extend(messages)
+        await asyncio.to_thread(self._save_messages_sync, current_messages)
+
+    async def aclear(self) -> None:
+        """Clears messages asynchronously."""
+        await asyncio.to_thread(self.clear)
+
 class AIModels():
     async def router_model(self):
         try:
@@ -148,7 +226,13 @@ class PurposeModels():
             logger.exception("Failed to authoritatively determine the route. Proceeding with langchain")
             return "langchain"
         
-    async def general_chat(self, query):
+    async def general_chat(self, query, session_id):
+        memory = Memory(session_id=session_id)
+        raw_history_messages = await memory.aget_messages()
+        formatted_history = "\n".join(
+            f"{'User' if isinstance(m, HumanMessage) else 'Assistant'}: {m.content}"
+            for m in raw_history_messages[-10:]
+        )
         general_chat_prompt = ChatPromptTemplate.from_template("""
             You are the **General Chat Assistant for BabyNest**, an organization dedicated to supporting maternal health, baby care, and family wellness.
 
@@ -183,8 +267,13 @@ class PurposeModels():
             5. Keep every message concise but genuinely helpful.
 
             ---
+            Previous conversation history is also provided as history to make your work easier and extremely efficient. Having the conversation history, be more intelligent,ask follow up questions, explain further and ensure you increase efficiency in all your operations.
+            **[Relevant Knowledge Context (from RAG/VectorDB)]**
+            {context}
 
-            Context: {context}  
+            **[Conversation History]**
+            {history}
+                                                                        
             User: {user_query}  
             BabyNest Assistant:
             """)
@@ -194,7 +283,14 @@ class PurposeModels():
             general_chain = general_chat_prompt | general_llm |StrOutputParser() 
             document_context = await retriever.get_documents(query=query)
             output = await general_chain.ainvoke({"context":document_context,
-             "user_query": query })
+             "user_query": query ,
+             "history": formatted_history})
+            
+            await memory.aadd_messages([
+                HumanMessage(content=query),
+                AIMessage(content=output)
+            ])
+            logger.info("Saving to memory")
             logger.info("General chat: Successful")
             return output
         except Exception as e:
