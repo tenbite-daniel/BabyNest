@@ -20,3 +20,5 @@ beautifulsoup4
 duckduckgo-search
 rank_bm25
 langchain-classic
+tavily
+upstash-redis
