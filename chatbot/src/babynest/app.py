@@ -78,6 +78,7 @@ async def root():
 
 
 @app.post("/api/chat", response_model=Union[ChatResponse, CrewResponse])
+@limiter.limit("5/minute")
 async def chat(chat_request: ChatRequest):
     try:
         route = await assistant.router(query=chat_request.user_request)

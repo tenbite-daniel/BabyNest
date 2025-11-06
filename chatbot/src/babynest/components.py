@@ -12,7 +12,6 @@ from pathlib import Path
 from dotenv import load_dotenv
 from upstash_redis import Redis
 from langchain.schema import BaseMessage, HumanMessage, AIMessage
-from langchain_core.chat_history import BaseChatMessageHistory
 
 load_dotenv()
 
