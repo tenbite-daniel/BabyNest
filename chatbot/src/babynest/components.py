@@ -61,19 +61,20 @@ try:
     logger.info("Successful")
 except Exception as e:
     logger.exception(f"Failed to set up Redis: {e}")
+    
 
 
 class ContentRetriever():
-    async def get_documents(self, query: str) -> str:
+    def get_documents(self, query: str) -> str:
         try:
-            docs = await asyncio.to_thread(stored_data.similarity_search, query, k=4)
+            docs = stored_data.similarity_search(query=query, k=5)
             return "\n\n".join(doc.page_content for doc in docs)
         except Exception as e:
             logger.exception("Failed to retrieve documents from Chroma.")
             return ""
     
-    async def web_search_tool(self,query):
-        results = await asyncio.to_thread(client.search, query=query, max_results=7)
+    def web_search_tool(self,query):
+        results = client.search(query=query, max_results=7)
         logger.info("Tavily query successfull.")
         formatted_results = []
         for x in results["results"]:
@@ -130,7 +131,7 @@ class Memory():
         """Appends new messages and saves the entire history synchronously."""
         current_messages = self._get_messages_sync()
         current_messages.extend(messages)
-        self._save_messages_sync(current_messages)\
+        self._save_messages_sync(current_messages)
         
     def clear(self) -> None:
         """Clears all messages synchronously by deleting the key."""
@@ -281,7 +282,7 @@ class PurposeModels():
         try:
             general_llm = await models.general_model()
             general_chain = general_chat_prompt | general_llm |StrOutputParser() 
-            document_context = await retriever.get_documents(query=query)
+            document_context = retriever.get_documents(query=query)
             output = await general_chain.ainvoke({"context":document_context,
              "user_query": query ,
              "history": formatted_history})
