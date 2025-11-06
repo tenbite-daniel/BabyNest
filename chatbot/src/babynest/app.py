@@ -53,7 +53,7 @@ app.add_middleware(SlowAPIMiddleware)
 
 origins = [
     "https://baby-nest-five.vercel.app",
-    "https://babynest.netlify.app/"
+    "https://babynest.netlify.app"
 ]
 
 app.add_middleware(
