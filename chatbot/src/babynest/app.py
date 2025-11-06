@@ -63,7 +63,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  
+    allow_origins=["*"],  
     allow_headers=["*"],
     allow_credentials=True,
     allow_methods=["POST", "GET"]
@@ -79,7 +79,7 @@ async def root():
 
 @app.post("/api/chat", response_model=Union[ChatResponse, CrewResponse])
 @limiter.limit("5/minute")
-async def chat(chat_request: ChatRequest):
+async def chat(request: Request,chat_request: ChatRequest):
     try:
         route = await assistant.router(query=chat_request.user_request)
         logger.info("Successfully determined route")

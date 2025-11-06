@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BabyNest - Supporting Mothers Through Pregnancy & Postpartum</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="logo">BabyNest</div>
+                <ul class="nav-links">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#community">Community</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home" class="hero">
+            <div class="container">
+                <h1>Supporting African Mothers Through Every Step</h1>
+                <p>Accurate medical information, personalized support, and a caring community for your pregnancy and postpartum journey.</p>
+                <button class="cta-button">Get Started</button>
+            </div>
+        </section>
+
+        <section id="about" class="about">
+            <div class="container">
+                <h2>About BabyNest</h2>
+                <p>BabyNest is a digital-first, Africa-focused platform dedicated to improving maternal health literacy. We provide expecting and new mothers with accurate medical information, AI-driven personalized tips, and access to a supportive community.</p>
+                <div class="stats">
+                    <div class="stat-item">
+                        <h3>Free Access</h3>
+                        <p>Affordable support for all mothers</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>Expert Guidance</h3>
+                        <p>Trusted healthcare information</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>Community Support</h3>
+                        <p>Connect with other mothers</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <div class="container">
+                <h2>Our Features</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3>AI-Driven Tips</h3>
+                        <p>Personalized advice tailored to your pregnancy stage and postpartum needs.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Journaling</h3>
+                        <p>Document your journey and track your thoughts and feelings.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Support Groups</h3>
+                        <p>Join online communities of mothers sharing similar experiences.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Therapist Access</h3>
+                        <p>Connect with qualified therapists for professional support.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Real Stories</h3>
+                        <p>Read and share authentic experiences from other mothers.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Baby Tracker</h3>
+                        <p>Monitor your baby's growth and development milestones.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="community" class="community">
+            <div class="container">
+                <h2>Join Our Community</h2>
+                <p>Connect with thousands of mothers across Africa. Share your story, find support, and grow together.</p>
+                <button class="cta-button">Join Now</button>
+            </div>
+        </section>
+
+        <section id="contact" class="contact">
+            <div class="container">
+                <h2>Get In Touch</h2>
+                <form class="contact-form">
+                    <input type="text" placeholder="Your Name" required>
+                    <input type="email" placeholder="Your Email" required>
+                    <textarea placeholder="Your Message" rows="5" required></textarea>
+                    <button type="submit">Send Message</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 BabyNest. Supporting mothers across Africa.</p>
+        </div>
+    </footer>
+
+    <div id="chatbot-trigger" class="chatbot-trigger">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+    </div>
+
+    <div id="chatbot-window" class="chatbot-window">
+        <div class="chatbot-header">
+            <div class="chatbot-header-content">
+                <h3>BabyNest Assistant</h3>
+                <p>How can we help you today?</p>
+            </div>
+            <button id="close-chat" class="close-chat">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="chatbot-messages" id="chatbot-messages">
+            <div class="bot-message">
+                <div class="message-content">
+                    <p>Hello! Welcome to BabyNest. I'm here to help you with information about pregnancy and postpartum care.</p>
+                </div>
+            </div>
+            <div class="quick-buttons">
+                <button class="quick-button" data-action="about">Tell me about you</button>
+                <button class="quick-button" data-action="fact">Give me a random pregnancy fact</button>
+                <button class="quick-button" data-action="research">Random research</button>
+            </div>
+        </div>
+        <div class="chatbot-input">
+            <input type="text" id="chat-input" placeholder="Type your message...">
+            <button id="send-message">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
