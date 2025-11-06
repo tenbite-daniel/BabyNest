@@ -1,17 +1,12 @@
 from crewai import Agent, Crew, Process, Task, LLM
 from crewai.project import CrewBase, agent, crew, task
-from crewai.agents.agent_builder.base_agent import BaseAgent
 from crewai.tools import tool
-from langchain_community.tools import DuckDuckGoSearchRun
-from langchain.prompts import ChatPromptTemplate
-from langchain_groq import ChatGroq
-from langchain_google_genai import ChatGoogleGenerativeAI
-from typing import List
 from dotenv import load_dotenv
-from db_handler import logger, stored_data
+from .components import logger, retriever
 import os
 
 load_dotenv()
+
 
 @tool
 def internet_research_tool(query: str) -> str:
@@ -22,10 +17,9 @@ def internet_research_tool(query: str) -> str:
     """
     try:
         logger.info("Looking for internet information regarding your query")
-        search_tool_instance = DuckDuckGoSearchRun()
-        result = search_tool_instance.run(query)
+        result = retriever.web_search_tool(query=query)
         logger.info("Web search tool successfully retrieved search results")
-        return result
+        return "\n\n".join(result)
     except Exception as e:
         logger.exception("Failed to search the internet for your query")
         return f"No information collected regarding {query}"
@@ -39,24 +33,21 @@ def rag_tool(query: str) -> str:
     Use this tool to get information from the internal knowledge base.
     """
     try:
-        result = stored_data.invoke(query)
-        logger.info("Successfully searched the vector db")
-        return result if result else "No relevant documents found in the db"
+        result = retriever.get_documents(query=query)
+        return result
     except Exception as e:
         logger.exception("Failed to search the vector db")
         return "No relevant documents found"
 
-llm_clients = {
-    "groq": ChatGroq(model="groq/llama-3.3-70b-versatile", temperature=0.7, api_key=os.getenv("GROQ_API_KEY")),
-    "gemini": ChatGoogleGenerativeAI(model="gemini/gemini-1.5-pro", temperature=0.7, google_api_key=os.getenv("GOOGLE_API_KEY"))  
-}
    
 def get_llm():
     try:
+        load_dotenv()
         return LLM(
-            model="gemini/gemini-1.5-flash",
+            model="gemini/gemini-2.5-flash",
             api_key=os.getenv("GOOGLE_API_KEY"),
-            temperature=0.5
+            temperature=0.7,
+            stream=True
         )
     except Exception as e:
         logger.error(f"Failed to connect to Gemini... : {e}")
@@ -83,121 +74,89 @@ class Babynest:
             logger.warning("Failed to load config files: %s", e)
             self.agents_config, self.tasks_config = {}, {}
 
-    # New Agents
     @agent
-    def planner(self) -> Agent:
+    def main_agent(self) -> Agent:
         return Agent(
-            config=self.agents_config.get('planner', {}),
+            config=self.agents_config.get('main_agent', {}),
             verbose=True,
             llm=get_llm(),
+            max_iter=2
         )
 
-    @agent
-    def refiner(self) -> Agent:
-        return Agent(
-            config=self.agents_config.get('refiner', {}),
-            verbose=True,
-            llm=get_llm(),
-            tools=[] # No tools needed for this agent
-        )
-
-    # Existing Agents
     @agent
     def maternal_health_researcher(self) -> Agent:
         return Agent(
             config=self.agents_config.get('maternal_health_researcher', {}),
             verbose=True,
+            llm=get_llm(),
+            tools=[rag_tool, internet_research_tool],
+            max_iter=3
+        )
+
+    @agent
+    def community_testimonials_researcher(self) -> Agent:
+        return Agent(
+            config=self.agents_config.get('community_testimonials_researcher', {}),
+            verbose=True,
             tools=[internet_research_tool, rag_tool],
-            llm=get_llm()
+            llm=get_llm(),
+            max_iter=2
         )
 
     @agent
-    def personalized_guidance(self) -> Agent:
+    def personalized_health_communicator(self) -> Agent:
         return Agent(
-            config=self.agents_config.get('personalized_guidance', {}),
+            config=self.agents_config.get('personalized_health_communicator', {}),
             verbose=True,
             llm=get_llm(),
-            tools=[rag_tool, internet_research_tool]
+            tools=[],
+            max_iter=3
         )
 
     @agent
-    def community_testimonials(self) -> Agent:
+    def final_response_synthesizer(self) -> Agent:
         return Agent(
-            config=self.agents_config.get('community_testimonials', {}),
+            config=self.agents_config.get('final_response_synthesizer', {}),
             verbose=True,
             llm=get_llm(),
-            tools=[rag_tool, internet_research_tool]
-        )
-
-    @agent
-    def summarizer(self) -> Agent:
-        return Agent(
-            config=self.agents_config.get('summarizer', {}),
-            verbose=True,
-            llm=get_llm()
-        )
-
-    @agent
-    def moderator(self) -> Agent:
-        return Agent(
-            config=self.agents_config.get('moderator', {}),
-            verbose=True,
-            llm=get_llm()
-        )
-
-    # New Sequential Tasks
-    @task
-    def plan_conversation(self) -> Task:
-        return Task(
-            config=self.tasks_config.get('plan_conversation', {}),
-            agent=self.planner() # Ensure the agent is an instance
+            max_iter=2
         )
 
     @task
-    def research_and_draft(self) -> Task:
+    def routing_task(self) -> Task:
         return Task(
-            config=self.tasks_config.get('research_and_draft', {}),
-            agent=self.maternal_health_researcher()
+            config=self.tasks_config.get('main_task', {}),
+            agent=self.main_agent() 
+        )
+
+    @task
+    def maternal_health_task(self) -> Task:
+        return Task(
+            config=self.tasks_config.get('maternal_health_researcher_task', {}),
+            agent=self.maternal_health_researcher() # This needs a user_query variable
         )
     
     @task
-    def refine_health_info(self) -> Task:
+    def personalized_health_communicator_task(self) -> Task:
         return Task(
-            config=self.tasks_config.get('refine_health_info', {}),
-            agent=self.refiner(),
-            context=[self.research_and_draft()]
+            config=self.tasks_config.get('personalized_health_communicator_task', {}),
+            agent=self.personalized_health_communicator(),
+            context=[self.routing_task()]
         )
 
     @task
-    def get_testimonials(self) -> Task:
+    def community_testimonials(self) -> Task:
         return Task(
-            config=self.tasks_config.get('get_testimonials', {}),
-            agent=self.community_testimonials(),
-            context=[self.refine_health_info()]
+            config=self.tasks_config.get('community_testimonials_task', {}),
+            agent=self.community_testimonials_researcher(),
         )
 
     @task
-    def synthesize_and_personalize(self) -> Task:
+    def final_response_synthesizer_task(self) -> Task:
         return Task(
-            config=self.tasks_config.get('synthesize_and_personalize', {}),
-            agent=self.personalized_guidance(),
-            context=[self.refine_health_info(), self.get_testimonials()]
-        )
-
-    @task
-    def moderation_and_finalization(self) -> Task:
-        return Task(
-            config=self.tasks_config.get('moderation_and_finalization', {}),
-            agent=self.moderator(),
-            context=[self.synthesize_and_personalize()]
-        )
-
-    @task
-    def final_summarization(self) -> Task:
-        return Task(
-            config=self.tasks_config.get('final_summarization', {}),
-            agent=self.summarizer(),
-            context=[self.moderation_and_finalization()]
+            config=self.tasks_config.get('final_response_synthesizer_task', {}),
+            agent=self.final_response_synthesizer(),
+            context=[self.personalized_health_communicator_task()]
         )
 
     @crew
@@ -205,22 +164,18 @@ class Babynest:
         """Creates the Babynest crew with the new sequential process."""
         return Crew(
             agents=[
-                self.planner(),
+                self.main_agent(),
                 self.maternal_health_researcher(),
-                self.refiner(),
-                self.community_testimonials(),
-                self.personalized_guidance(),
-                self.moderator(),
-                self.summarizer()
+                self.community_testimonials_researcher(),
+                self.personalized_health_communicator(),
+                self.final_response_synthesizer()
             ],
             tasks=[
-                self.plan_conversation(),
-                self.research_and_draft(),
-                self.refine_health_info(),
-                self.get_testimonials(),
-                self.synthesize_and_personalize(),
-                self.moderation_and_finalization(),
-                self.final_summarization()
+                self.routing_task(),
+                # self.maternal_health_task(),
+                self.personalized_health_communicator_task(),
+                # self.community_testimonials(),
+                self.final_response_synthesizer_task(),
             ],
             process=Process.sequential,
             verbose=True,
