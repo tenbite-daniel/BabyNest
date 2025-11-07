@@ -22,3 +22,4 @@ rank_bm25
 langchain-classic
 tavily
 upstash-redis
+crewai[google-genai]
