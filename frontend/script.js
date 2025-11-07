@@ -5,7 +5,7 @@ const chatInput = document.getElementById('chat-input');
 const sendButton = document.getElementById('send-message');
 const chatMessages = document.getElementById('chatbot-messages');
 
-const API_ENDPOINT = 'http://127.0.0.1:8000/api/chat';
+const API_ENDPOINT = 'https://babynest-ubhk.onrender.com/chat';
 const SESSION_ID = 'temp-user-session-123';
 
 chatbotTrigger.addEventListener('click', () => {
